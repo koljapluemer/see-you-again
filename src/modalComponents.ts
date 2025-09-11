@@ -1,0 +1,204 @@
+import { ContextEntry, ActionType, ACTION_OPTIONS } from './types';
+
+export class ContextFieldManager {
+	private container: HTMLElement;
+	private entries: ContextEntry[] = [];
+	private onChangeCallback: (entries: ContextEntry[]) => void;
+
+	constructor(container: HTMLElement, onChange: (entries: ContextEntry[]) => void) {
+		this.container = container;
+		this.onChangeCallback = onChange;
+		this.initializeFields();
+	}
+
+	private initializeFields(): void {
+		// Start with two empty fields
+		this.entries = [
+			{ context: '', action: 'look-at' },
+			{ context: '', action: 'look-at' }
+		];
+		this.render();
+	}
+
+	private createFieldRow(entry: ContextEntry, index: number): HTMLElement {
+		const row = document.createElement('div');
+		row.classList.add('context-field-row');
+		row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: center;';
+
+		// Context input field
+		const contextInput = document.createElement('input');
+		contextInput.type = 'text';
+		contextInput.placeholder = `Context ${index + 1}`;
+		contextInput.value = entry.context;
+		contextInput.style.cssText = 'flex: 1; padding: 6px; border: 1px solid var(--background-modifier-border); border-radius: 4px; background: var(--background-primary);';
+		
+		contextInput.addEventListener('input', (e) => {
+			const target = e.target as HTMLInputElement;
+			this.entries[index].context = target.value;
+			this.onChangeCallback(this.entries);
+			
+			// Add new field if this is the last field and user started typing
+			if (index === this.entries.length - 1 && target.value.length > 0) {
+				this.addNewField();
+			}
+		});
+
+		// Action dropdown
+		const actionSelect = document.createElement('select');
+		actionSelect.style.cssText = 'padding: 6px; border: 1px solid var(--background-modifier-border); border-radius: 4px; background: var(--background-primary); min-width: 100px;';
+		
+		ACTION_OPTIONS.forEach(option => {
+			const optionEl = document.createElement('option');
+			optionEl.value = option.value;
+			optionEl.textContent = option.label;
+			optionEl.selected = option.value === entry.action;
+			actionSelect.appendChild(optionEl);
+		});
+
+		actionSelect.addEventListener('change', (e) => {
+			const target = e.target as HTMLSelectElement;
+			this.entries[index].action = target.value as ActionType;
+			this.onChangeCallback(this.entries);
+		});
+
+		row.appendChild(contextInput);
+		row.appendChild(actionSelect);
+
+		return row;
+	}
+
+	private addNewField(): void {
+		this.entries.push({ context: '', action: 'look-at' });
+		this.render();
+	}
+
+	private render(): void {
+		this.container.innerHTML = '';
+		
+		this.entries.forEach((entry, index) => {
+			const fieldRow = this.createFieldRow(entry, index);
+			this.container.appendChild(fieldRow);
+		});
+	}
+
+	getEntries(): ContextEntry[] {
+		return this.entries.filter(entry => entry.context.trim().length > 0);
+	}
+
+	hasValidEntries(): boolean {
+		return this.getEntries().length > 0;
+	}
+
+	reset(): void {
+		this.entries = [
+			{ context: '', action: 'look-at' },
+			{ context: '', action: 'look-at' }
+		];
+		this.render();
+	}
+}
+
+export class ModalButtonManager {
+	private container: HTMLElement;
+	private onSkip: () => void;
+	private onExclude: () => void;
+	private onSave: () => void;
+	private onNext: () => void;
+	private isValidForm: () => boolean;
+
+	constructor(
+		container: HTMLElement,
+		callbacks: {
+			onSkip: () => void;
+			onExclude: () => void;
+			onSave: () => void;
+			onNext: () => void;
+			isValidForm: () => boolean;
+		}
+	) {
+		this.container = container;
+		this.onSkip = callbacks.onSkip;
+		this.onExclude = callbacks.onExclude;
+		this.onSave = callbacks.onSave;
+		this.onNext = callbacks.onNext;
+		this.isValidForm = callbacks.isValidForm;
+		this.render();
+	}
+
+	private createButton(text: string, onClick: () => void, variant: 'primary' | 'secondary' | 'destructive' = 'secondary'): HTMLButtonElement {
+		const button = document.createElement('button');
+		button.textContent = text;
+		button.style.cssText = `
+			padding: 8px 16px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 14px;
+			margin-right: 8px;
+			transition: all 0.2s ease;
+		`;
+
+		switch (variant) {
+			case 'primary':
+				button.style.backgroundColor = 'var(--interactive-accent)';
+				button.style.color = 'var(--text-on-accent)';
+				break;
+			case 'destructive':
+				button.style.backgroundColor = 'var(--background-modifier-error)';
+				button.style.color = 'var(--text-error)';
+				break;
+			default:
+				button.style.backgroundColor = 'var(--background-secondary)';
+				button.style.color = 'var(--text-normal)';
+		}
+
+		button.addEventListener('click', onClick);
+		return button;
+	}
+
+	private render(): void {
+		this.container.style.cssText = 'display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--background-modifier-border);';
+
+		const leftButtons = document.createElement('div');
+		const rightButtons = document.createElement('div');
+
+		// Left side buttons
+		const skipButton = this.createButton('Skip', this.onSkip);
+		const excludeButton = this.createButton('Exclude', this.onExclude, 'destructive');
+		
+		leftButtons.appendChild(skipButton);
+		leftButtons.appendChild(excludeButton);
+
+		// Right side buttons
+		const saveButton = this.createButton('Save', this.onSave, 'primary');
+		const nextButton = this.createButton('Next', this.onNext, 'primary');
+
+		rightButtons.appendChild(saveButton);
+		rightButtons.appendChild(nextButton);
+
+		this.container.appendChild(leftButtons);
+		this.container.appendChild(rightButtons);
+
+		// Update button states
+		this.updateButtonStates();
+	}
+
+	updateButtonStates(): void {
+		const nextButton = this.container.querySelector('button:last-child') as HTMLButtonElement;
+		const saveButton = this.container.querySelector('button:nth-last-child(2)') as HTMLButtonElement;
+		
+		const isValid = this.isValidForm();
+		
+		if (nextButton) {
+			nextButton.disabled = !isValid;
+			nextButton.style.opacity = isValid ? '1' : '0.5';
+			nextButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+		}
+		
+		if (saveButton) {
+			saveButton.disabled = !isValid;
+			saveButton.style.opacity = isValid ? '1' : '0.5';
+			saveButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+		}
+	}
+}
