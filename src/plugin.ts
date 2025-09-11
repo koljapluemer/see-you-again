@@ -1,6 +1,7 @@
 import { Plugin } from 'obsidian';
 import { SeeYouAgainSettings, DEFAULT_SETTINGS } from './types';
 import { AddContextModal } from './addContextModal';
+import { ContextBrowserModal } from './contextBrowserModal';
 import { SeeYouAgainSettingTab } from './settings';
 
 export class SeeYouAgainPlugin extends Plugin {
@@ -15,6 +16,15 @@ export class SeeYouAgainPlugin extends Plugin {
 			name: 'Add context to random note',
 			callback: () => {
 				new AddContextModal(this.app, this).open();
+			}
+		});
+
+		// Add command to start context browsing
+		this.addCommand({
+			id: 'start-context-browser',
+			name: 'Start context...',
+			callback: () => {
+				new ContextBrowserModal(this.app, this).open();
 			}
 		});
 

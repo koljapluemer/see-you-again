@@ -132,4 +132,48 @@ export class NoteService {
 
 		return Array.from(contextSet).sort();
 	}
+
+	/**
+	 * Get all notes that have a specific context (sanitized key)
+	 */
+	async getNotesWithContext(sanitizedContext: string): Promise<TFile[]> {
+		const allFiles = this.getAllMarkdownFiles();
+		const matchingFiles: TFile[] = [];
+
+		for (const file of allFiles) {
+			try {
+				const fileCache = this.app.metadataCache.getFileCache(file);
+				const frontmatter = fileCache?.frontmatter;
+				
+				if (frontmatter && frontmatter['see-you-again']) {
+					const seeYouAgain = frontmatter['see-you-again'];
+					
+					// Handle object format (current implementation)
+					if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
+						if (seeYouAgain[sanitizedContext]) {
+							matchingFiles.push(file);
+						}
+					}
+				}
+			} catch (error) {
+				console.error('Error checking context in file:', file.path, error);
+			}
+		}
+
+		return matchingFiles;
+	}
+
+	/**
+	 * Get a random note with a specific context
+	 */
+	async getRandomNoteWithContext(sanitizedContext: string): Promise<TFile | null> {
+		const notesWithContext = await this.getNotesWithContext(sanitizedContext);
+		
+		if (notesWithContext.length === 0) {
+			return null;
+		}
+
+		const randomIndex = Math.floor(Math.random() * notesWithContext.length);
+		return notesWithContext[randomIndex];
+	}
 }
