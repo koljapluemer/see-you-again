@@ -150,7 +150,8 @@ export class AddContextModal extends Modal {
 		try {
 			const metadata: SeeYouAgainFrontmatter = {};
 			entries.forEach(entry => {
-				metadata[entry.context] = entry.action;
+				const sanitizedKey = this.sanitizeContextKey(entry.context);
+				metadata[sanitizedKey] = entry.action;
 			});
 
 			await this.noteService.saveMetadata(this.currentNote, metadata);
@@ -362,6 +363,19 @@ export class AddContextModal extends Modal {
 		links.forEach((link) => {
 			(link as HTMLElement).style.cssText += 'color: var(--text-accent); text-decoration: none;';
 		});
+	}
+
+	private sanitizeContextKey(context: string): string {
+		// Convert to lowercase and replace non-alphanumeric characters with dashes
+		return context
+			.toLowerCase()
+			.trim()
+			// Replace sequences of non-alphanumeric characters with single dashes
+			.replace(/[^a-z0-9]+/g, '-')
+			// Remove leading/trailing dashes
+			.replace(/^-+|-+$/g, '')
+			// Ensure we don't end up with an empty string
+			|| 'context';
 	}
 
 	private removeFrontmatter(content: string): string {
