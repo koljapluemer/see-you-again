@@ -52,7 +52,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 		containerEl.createEl('h3', { text: 'Statistics' });
 		
 		const statsContainer = containerEl.createEl('div');
-		statsContainer.style.cssText = 'margin: 16px 0; padding: 12px; background: var(--background-secondary); border-radius: 6px;';
+		statsContainer.className = 'see-you-again-stats-container';
 
 		// We'll calculate and display stats about processed vs unprocessed notes
 		this.calculateAndDisplayStats(statsContainer);
@@ -121,7 +121,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 			await this.plugin.saveSettings();
 
 			// Refresh the stats display
-			const statsContainer = this.containerEl.querySelector('div[style*="background: var(--background-secondary)"]') as HTMLElement;
+			const statsContainer = this.containerEl.querySelector('.see-you-again-stats-container') as HTMLElement;
 			if (statsContainer) {
 				await this.calculateAndDisplayStats(statsContainer);
 			}

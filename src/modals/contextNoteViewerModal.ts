@@ -50,7 +50,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		contentEl.empty();
 		
 		const header = contentEl.createEl('div');
-		header.style.cssText = 'text-align: center; padding: 40px 20px;';
+		header.className = 'context-note-viewer-no-notes';
 		
 		header.createEl('h2', { text: 'No Notes Found' });
 		header.createEl('p', { 
@@ -58,7 +58,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		});
 		
 		const closeButton = header.createEl('button', { text: 'Close' });
-		closeButton.style.cssText = 'padding: 8px 16px; border: 1px solid var(--background-modifier-border); border-radius: 4px; background: var(--background-secondary); cursor: pointer;';
+		closeButton.className = 'modal-close-button';
 		closeButton.addEventListener('click', () => this.close());
 	}
 
@@ -74,12 +74,12 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		// Add context label above title
 		const contextLabel = document.createElement('div');
 		contextLabel.textContent = `Context: ${this.hydratedContext}`;
-		contextLabel.style.cssText = 'font-size: 14px; color: var(--text-muted); margin-bottom: 8px;';
+		contextLabel.className = 'context-note-viewer-label';
 		header.insertBefore(contextLabel, header.firstChild);
 
 		// Note preview
 		const previewContainer = contentEl.createEl('div');
-		previewContainer.style.cssText = 'margin-bottom: 20px; padding: 12px; background: var(--background-secondary); border-radius: 6px; max-height: 400px; overflow-y: auto; border: 1px solid var(--background-modifier-border);';
+		previewContainer.className = 'context-note-viewer-preview';
 		
 		try {
 			const noteContent = await this.app.vault.read(this.currentNote);
@@ -104,19 +104,10 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 		// Next button
 		const buttonContainer = contentEl.createEl('div');
-		buttonContainer.style.cssText = 'text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--background-modifier-border);';
+		buttonContainer.className = 'context-note-viewer-button-container';
 		
 		const nextButton = buttonContainer.createEl('button', { text: 'Next' });
-		nextButton.style.cssText = `
-			padding: 8px 24px;
-			border: 1px solid var(--interactive-accent);
-			border-radius: 4px;
-			background: var(--interactive-accent);
-			color: var(--text-on-accent);
-			cursor: pointer;
-			font-size: 14px;
-			transition: all 0.2s ease;
-		`;
+		nextButton.className = 'context-note-viewer-next-button';
 		
 		nextButton.addEventListener('click', () => this.handleNext());
 	}

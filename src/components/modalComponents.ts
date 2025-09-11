@@ -21,20 +21,7 @@ class FuzzyAutocomplete {
 
 	private createDropdown(): void {
 		this.dropdown = document.createElement('div');
-		this.dropdown.style.cssText = `
-			position: absolute;
-			top: 100%;
-			left: 0;
-			right: 0;
-			background: var(--background-primary);
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			max-height: 200px;
-			overflow-y: auto;
-			z-index: 1000;
-			display: none;
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-		`;
+		this.dropdown.className = 'modal-autocomplete-dropdown';
 		
 		// Ensure parent has relative positioning
 		this.container.style.position = 'relative';
@@ -80,12 +67,7 @@ class FuzzyAutocomplete {
 		this.filteredSuggestions.forEach((suggestion, index) => {
 			const item = document.createElement('div');
 			item.textContent = suggestion;
-			item.style.cssText = `
-				padding: 8px 12px;
-				cursor: pointer;
-				border-bottom: 1px solid var(--background-modifier-border-hover);
-				transition: background-color 0.1s ease;
-			`;
+			item.className = 'modal-autocomplete-item';
 
 			item.addEventListener('mouseenter', () => {
 				this.selectedIndex = index;
@@ -194,18 +176,17 @@ export class ContextFieldManager {
 	private createFieldRow(entry: ContextEntry, index: number): HTMLElement {
 		const row = document.createElement('div');
 		row.classList.add('context-field-row');
-		row.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;';
 
 		// Context input container (for autocomplete positioning)
 		const inputContainer = document.createElement('div');
-		inputContainer.style.cssText = 'flex: 1; position: relative;';
+		inputContainer.className = 'modal-input-container';
 
 		// Context input field
 		const contextInput = document.createElement('input');
 		contextInput.type = 'text';
 		contextInput.placeholder = `Context ${index + 1}`;
 		contextInput.value = entry.context;
-		contextInput.style.cssText = 'width: 100%; padding: 6px; border: 1px solid var(--background-modifier-border); border-radius: 4px; background: var(--background-primary);';
+		contextInput.className = 'modal-context-input';
 		
 		contextInput.addEventListener('input', (e) => {
 			const target = e.target as HTMLInputElement;
@@ -233,7 +214,7 @@ export class ContextFieldManager {
 
 		// Action dropdown
 		const actionSelect = document.createElement('select');
-		actionSelect.style.cssText = 'padding: 6px; border: 1px solid var(--background-modifier-border); border-radius: 4px; background: var(--background-primary); min-width: 100px;';
+		actionSelect.className = 'modal-action-select';
 		
 		ACTION_OPTIONS.forEach(option => {
 			const optionEl = document.createElement('option');
@@ -332,45 +313,14 @@ export class ModalButtonManager {
 	private createButton(text: string, onClick: () => void, variant: 'primary' | 'secondary' | 'destructive' = 'secondary'): HTMLButtonElement {
 		const button = document.createElement('button');
 		button.textContent = text;
-		button.style.cssText = `
-			padding: 8px 16px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 14px;
-			margin-right: 8px;
-			transition: all 0.2s ease;
-		`;
-
-		switch (variant) {
-			case 'primary':
-				button.style.backgroundColor = 'var(--interactive-accent)';
-				button.style.color = 'var(--text-on-accent)';
-				break;
-			case 'destructive':
-				button.style.backgroundColor = 'var(--background-secondary)';
-				button.style.color = 'var(--text-error)';
-				button.style.border = '1px solid var(--text-error)';
-				button.addEventListener('mouseenter', () => {
-					button.style.backgroundColor = 'var(--background-modifier-error-hover)';
-					button.style.color = 'var(--text-on-accent)';
-				});
-				button.addEventListener('mouseleave', () => {
-					button.style.backgroundColor = 'var(--background-secondary)';
-					button.style.color = 'var(--text-error)';
-				});
-				break;
-			default:
-				button.style.backgroundColor = 'var(--background-secondary)';
-				button.style.color = 'var(--text-normal)';
-		}
+		button.className = `modal-button modal-button-${variant}`;
 
 		button.addEventListener('click', onClick);
 		return button;
 	}
 
 	private render(): void {
-		this.container.style.cssText = 'display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--background-modifier-border);';
+		this.container.className = 'modal-button-container';
 
 		const leftButtons = document.createElement('div');
 		const rightButtons = document.createElement('div');

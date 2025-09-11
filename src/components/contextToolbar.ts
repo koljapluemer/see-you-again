@@ -64,18 +64,6 @@ export class ContextToolbar {
 	private createToolbar(): void {
 		this.toolbarElement = document.createElement('div');
 		this.toolbarElement.className = 'see-you-again-toolbar';
-		this.toolbarElement.style.cssText = `
-			position: absolute;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			background: var(--background-primary);
-			border-top: 1px solid var(--background-modifier-border);
-			padding: 8px 12px;
-			z-index: 100;
-			transition: all 0.2s ease;
-			box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-		`;
 		
 		// Make sure the container has relative positioning
 		this.container.style.position = 'relative';
@@ -94,58 +82,27 @@ export class ContextToolbar {
 
 	private renderCollapsed(): void {
 		const collapsedContent = document.createElement('div');
-		collapsedContent.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
+		collapsedContent.className = 'collapsed-content';
 
 		// Context count and toggle
 		const leftSection = document.createElement('div');
-		leftSection.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+		leftSection.className = 'left-section';
 
 		const contextCount = Object.keys(this.existingContexts).length;
 		const countText = leftSection.createEl('span', { 
 			text: `${contextCount} context${contextCount !== 1 ? 's' : ''}` 
 		});
-		countText.style.cssText = 'font-size: 12px; color: var(--text-muted);';
+		countText.className = 'context-count';
 
 		const expandButton = leftSection.createEl('button', { text: '▲' });
-		expandButton.style.cssText = `
-			padding: 2px 6px;
-			border: none;
-			background: none;
-			color: var(--text-muted);
-			cursor: pointer;
-			font-size: 10px;
-			transition: color 0.2s ease;
-		`;
+		expandButton.className = 'expand-button';
 		expandButton.addEventListener('click', () => this.toggleExpanded());
-		expandButton.addEventListener('mouseenter', () => {
-			expandButton.style.color = 'var(--text-normal)';
-		});
-		expandButton.addEventListener('mouseleave', () => {
-			expandButton.style.color = 'var(--text-muted)';
-		});
 
 		// Quick add button
 		const addButton = document.createElement('button');
 		addButton.textContent = '+ Add Context';
-		addButton.style.cssText = `
-			padding: 4px 8px;
-			border: 1px solid var(--interactive-accent);
-			border-radius: 3px;
-			background: var(--background-primary);
-			color: var(--interactive-accent);
-			cursor: pointer;
-			font-size: 11px;
-			transition: all 0.2s ease;
-		`;
+		addButton.className = 'add-button';
 		addButton.addEventListener('click', () => this.toggleQuickAdd());
-		addButton.addEventListener('mouseenter', () => {
-			addButton.style.backgroundColor = 'var(--interactive-accent)';
-			addButton.style.color = 'var(--text-on-accent)';
-		});
-		addButton.addEventListener('mouseleave', () => {
-			addButton.style.backgroundColor = 'var(--background-primary)';
-			addButton.style.color = 'var(--interactive-accent)';
-		});
 
 		collapsedContent.appendChild(leftSection);
 		collapsedContent.appendChild(addButton);
@@ -157,29 +114,22 @@ export class ContextToolbar {
 
 		// Header with collapse button
 		const header = expandedContent.createEl('div');
-		header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+		header.className = 'expanded-header';
 
 		const title = header.createEl('span', { text: 'Contexts' });
-		title.style.cssText = 'font-weight: 500; font-size: 13px; color: var(--text-normal);';
+		title.className = 'title';
 
 		const collapseButton = header.createEl('button', { text: '▼' });
-		collapseButton.style.cssText = `
-			padding: 2px 6px;
-			border: none;
-			background: none;
-			color: var(--text-muted);
-			cursor: pointer;
-			font-size: 10px;
-		`;
+		collapseButton.className = 'collapse-button';
 		collapseButton.addEventListener('click', () => this.toggleExpanded());
 
 		// Existing contexts
 		const contextsContainer = expandedContent.createEl('div');
-		contextsContainer.style.cssText = 'margin-bottom: 8px;';
+		contextsContainer.className = 'contexts-container';
 
 		if (Object.keys(this.existingContexts).length === 0) {
 			const emptyState = contextsContainer.createEl('div', { text: 'No contexts yet' });
-			emptyState.style.cssText = 'color: var(--text-muted); font-style: italic; font-size: 12px; padding: 4px 0;';
+			emptyState.className = 'empty-state';
 		} else {
 			this.renderContextPills(contextsContainer);
 		}
@@ -189,16 +139,7 @@ export class ContextToolbar {
 			this.renderQuickAddForm(expandedContent);
 		} else {
 			const addButton = expandedContent.createEl('button', { text: '+ Add Context' });
-			addButton.style.cssText = `
-				padding: 6px 12px;
-				border: 1px solid var(--interactive-accent);
-				border-radius: 4px;
-				background: var(--background-primary);
-				color: var(--interactive-accent);
-				cursor: pointer;
-				font-size: 12px;
-				width: 100%;
-			`;
+			addButton.className = 'add-button-expanded';
 			addButton.addEventListener('click', () => this.toggleQuickAdd());
 		}
 
@@ -207,85 +148,46 @@ export class ContextToolbar {
 
 	private renderContextPills(container: HTMLElement): void {
 		const pillsContainer = container.createEl('div');
-		pillsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 4px;';
+		pillsContainer.className = 'pills-container';
 
 		Object.entries(this.existingContexts).forEach(([sanitizedContext, action]) => {
 			const hydratedContext = ContextUtils.hydrateContextKey(sanitizedContext);
 			const actionLabel = ACTION_OPTIONS.find(opt => opt.value === action)?.label || action;
 
 			const pill = pillsContainer.createEl('div');
-			pill.style.cssText = `
-				display: flex;
-				align-items: center;
-				gap: 4px;
-				padding: 2px 6px;
-				background: var(--background-secondary);
-				border: 1px solid var(--background-modifier-border);
-				border-radius: 12px;
-				font-size: 11px;
-			`;
+			pill.className = 'context-pill';
 
 			const contextText = pill.createEl('span', { text: hydratedContext });
-			contextText.style.cssText = 'color: var(--text-normal);';
+			contextText.className = 'context-text';
 
 			const actionBadge = pill.createEl('span', { text: actionLabel });
-			actionBadge.style.cssText = `
-				background: var(--interactive-accent);
-				color: var(--text-on-accent);
-				padding: 1px 4px;
-				border-radius: 6px;
-				font-size: 9px;
-				font-weight: 500;
-			`;
+			actionBadge.className = 'action-badge';
 
 			const removeButton = pill.createEl('button', { text: '×' });
-			removeButton.style.cssText = `
-				border: none;
-				background: none;
-				color: var(--text-muted);
-				cursor: pointer;
-				font-size: 12px;
-				padding: 0;
-				margin-left: 2px;
-				line-height: 1;
-			`;
+			removeButton.className = 'remove-button';
 			removeButton.addEventListener('click', () => this.removeContext(sanitizedContext));
 		});
 	}
 
 	private renderQuickAddForm(container: HTMLElement): void {
 		const form = container.createEl('div');
-		form.style.cssText = 'border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 8px; background: var(--background-secondary);';
+		form.className = 'quick-add-form';
 
 		const inputRow = form.createEl('div');
-		inputRow.style.cssText = 'display: flex; gap: 6px; margin-bottom: 6px;';
+		inputRow.className = 'input-row';
 
 		// Context input with autocomplete
 		const inputContainer = inputRow.createEl('div');
-		inputContainer.style.cssText = 'flex: 1; position: relative;';
+		inputContainer.className = 'input-container';
 
 		const contextInput = inputContainer.createEl('input') as HTMLInputElement;
 		contextInput.type = 'text';
 		contextInput.placeholder = 'Context...';
-		contextInput.style.cssText = `
-			width: 100%;
-			padding: 4px 6px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 3px;
-			background: var(--background-primary);
-			font-size: 12px;
-		`;
+		contextInput.className = 'context-input';
 
 		// Action dropdown
 		const actionSelect = inputRow.createEl('select') as HTMLSelectElement;
-		actionSelect.style.cssText = `
-			padding: 4px 6px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 3px;
-			background: var(--background-primary);
-			font-size: 12px;
-			min-width: 80px;
-		`;
+		actionSelect.className = 'action-select';
 
 		ACTION_OPTIONS.forEach(option => {
 			const optionEl = actionSelect.createEl('option');
@@ -295,30 +197,14 @@ export class ContextToolbar {
 
 		// Buttons
 		const buttonRow = form.createEl('div');
-		buttonRow.style.cssText = 'display: flex; gap: 6px; justify-content: flex-end;';
+		buttonRow.className = 'button-row';
 
 		const cancelButton = buttonRow.createEl('button', { text: 'Cancel' });
-		cancelButton.style.cssText = `
-			padding: 4px 8px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 3px;
-			background: var(--background-secondary);
-			color: var(--text-normal);
-			cursor: pointer;
-			font-size: 11px;
-		`;
+		cancelButton.className = 'cancel-button';
 		cancelButton.addEventListener('click', () => this.toggleQuickAdd());
 
 		const saveButton = buttonRow.createEl('button', { text: 'Add' });
-		saveButton.style.cssText = `
-			padding: 4px 8px;
-			border: 1px solid var(--interactive-accent);
-			border-radius: 3px;
-			background: var(--interactive-accent);
-			color: var(--text-on-accent);
-			cursor: pointer;
-			font-size: 11px;
-		`;
+		saveButton.className = 'save-button';
 		saveButton.addEventListener('click', () => {
 			this.addContext(contextInput.value, actionSelect.value as ActionType);
 		});
@@ -332,20 +218,7 @@ export class ContextToolbar {
 
 	private addAutocomplete(input: HTMLInputElement): void {
 		const dropdown = document.createElement('div');
-		dropdown.style.cssText = `
-			position: absolute;
-			top: 100%;
-			left: 0;
-			right: 0;
-			background: var(--background-primary);
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			max-height: 120px;
-			overflow-y: auto;
-			z-index: 1000;
-			display: none;
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-		`;
+		dropdown.className = 'autocomplete-dropdown';
 
 		input.parentElement!.appendChild(dropdown);
 
@@ -365,20 +238,7 @@ export class ContextToolbar {
 
 				filtered.forEach(suggestion => {
 					const item = dropdown.createEl('div', { text: suggestion });
-					item.style.cssText = `
-						padding: 6px 8px;
-						cursor: pointer;
-						border-bottom: 1px solid var(--background-modifier-border-hover);
-						font-size: 12px;
-					`;
-
-					item.addEventListener('mouseenter', () => {
-						item.style.backgroundColor = 'var(--background-modifier-hover)';
-					});
-
-					item.addEventListener('mouseleave', () => {
-						item.style.backgroundColor = 'transparent';
-					});
+					item.className = 'autocomplete-item';
 
 					item.addEventListener('click', () => {
 						input.value = suggestion;

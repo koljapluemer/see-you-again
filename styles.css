@@ -2,33 +2,136 @@
 See You Again Plugin Styles
 */
 
-/* Context Toolbar */
+/* Context Toolbar - Main Container */
 .see-you-again-toolbar {
-    font-family: var(--font-ui);
-}
-
-.see-you-again-toolbar button {
-    font-family: var(--font-ui);
-}
-
-.see-you-again-toolbar input,
-.see-you-again-toolbar select {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--background-primary);
+    border-top: 1px solid var(--background-modifier-border);
+    padding: 8px 12px;
+    z-index: 100;
+    transition: all 0.2s ease;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     font-family: var(--font-ui);
 }
 
 /* Ensure toolbar doesn't interfere with editor */
 .workspace-leaf-content {
     padding-bottom: 45px; /* Space for toolbar */
+    position: relative;
 }
 
-/* Autocomplete dropdown specific styling */
-.see-you-again-toolbar .autocomplete-dropdown {
-    font-family: var(--font-ui);
-    box-shadow: var(--shadow-s);
+/* Collapsed State */
+.see-you-again-toolbar .collapsed-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* Context pills */
+.see-you-again-toolbar .left-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.see-you-again-toolbar .context-count {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.see-you-again-toolbar .expand-button {
+    padding: 2px 6px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 10px;
+    transition: color 0.2s ease;
+}
+
+.see-you-again-toolbar .expand-button:hover {
+    color: var(--text-normal);
+}
+
+.see-you-again-toolbar .add-button {
+    padding: 4px 8px;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 3px;
+    background: var(--background-primary);
+    color: var(--interactive-accent);
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+
+.see-you-again-toolbar .add-button:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Expanded State */
+.see-you-again-toolbar .expanded-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.see-you-again-toolbar .title {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text-normal);
+}
+
+.see-you-again-toolbar .collapse-button {
+    padding: 2px 6px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.see-you-again-toolbar .contexts-container {
+    margin-bottom: 8px;
+}
+
+.see-you-again-toolbar .empty-state {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 12px;
+    padding: 4px 0;
+}
+
+.see-you-again-toolbar .add-button-expanded {
+    padding: 6px 12px;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--interactive-accent);
+    cursor: pointer;
+    font-size: 12px;
+    width: 100%;
+}
+
+/* Context Pills */
+.see-you-again-toolbar .pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
 .see-you-again-toolbar .context-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 12px;
+    font-size: 11px;
     transition: all 0.15s ease;
 }
 
@@ -37,8 +140,495 @@ See You Again Plugin Styles
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Quick add form */
+.see-you-again-toolbar .context-text {
+    color: var(--text-normal);
+}
+
+.see-you-again-toolbar .action-badge {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    padding: 1px 4px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 500;
+}
+
+.see-you-again-toolbar .remove-button {
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+    margin-left: 2px;
+    line-height: 1;
+}
+
+/* Quick Add Form */
 .see-you-again-toolbar .quick-add-form {
     border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 8px;
+    background: var(--background-secondary);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.see-you-again-toolbar .input-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.see-you-again-toolbar .input-container {
+    flex: 1;
+    position: relative;
+}
+
+.see-you-again-toolbar .context-input {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-primary);
+    font-size: 12px;
+    font-family: var(--font-ui);
+}
+
+.see-you-again-toolbar .action-select {
+    padding: 4px 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-primary);
+    font-size: 12px;
+    min-width: 80px;
+    font-family: var(--font-ui);
+}
+
+.see-you-again-toolbar .button-row {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.see-you-again-toolbar .cancel-button {
+    padding: 4px 8px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 3px;
+    background: var(--background-secondary);
+    color: var(--text-normal);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-ui);
+}
+
+.see-you-again-toolbar .save-button {
+    padding: 4px 8px;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 3px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-ui);
+}
+
+/* Autocomplete Dropdown */
+.see-you-again-toolbar .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    max-height: 120px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-ui);
+}
+
+.see-you-again-toolbar .autocomplete-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+    font-size: 12px;
+}
+
+.see-you-again-toolbar .autocomplete-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+/* Modal Components */
+.context-field-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+}
+
+.modal-input-container {
+    flex: 1;
+    position: relative;
+}
+
+.modal-context-input {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    font-family: var(--font-ui);
+}
+
+.modal-action-select {
+    padding: 6px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    min-width: 100px;
+    font-family: var(--font-ui);
+}
+
+.modal-autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: var(--font-ui);
+}
+
+.modal-autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+    transition: background-color 0.1s ease;
+}
+
+.modal-autocomplete-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.modal-button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.modal-button {
+    padding: 8px 16px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+    font-family: var(--font-ui);
+}
+
+.modal-button-primary {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.modal-button-secondary {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+}
+
+.modal-button-destructive {
+    background: var(--background-secondary);
+    color: var(--text-error);
+    border: 1px solid var(--text-error);
+}
+
+.modal-button-destructive:hover {
+    background: var(--background-modifier-error-hover);
+    color: var(--text-on-accent);
+}
+
+/* Add Context Modal */
+.modal-no-notes-button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.modal-close-button {
+    padding: 8px 16px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-secondary);
+    cursor: pointer;
+    font-family: var(--font-ui);
+}
+
+.modal-note-preview {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.modal-fields-container {
+    margin-bottom: 20px;
+}
+
+/* Context Browser Modal */
+.context-browser-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 15px;
+}
+
+.context-browser-title {
+    margin: 0 0 15px 0;
+    color: var(--text-normal);
+}
+
+.context-browser-search {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    font-size: 14px;
+    font-family: var(--font-ui);
+}
+
+.context-browser-list {
+    margin-bottom: 20px;
+    min-height: 300px;
+}
+
+.context-browser-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 40px 0;
+}
+
+.context-browser-item {
+    padding: 12px 16px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--background-secondary);
+}
+
+.context-browser-item:hover {
+    background: var(--background-modifier-hover);
+    border-color: var(--interactive-accent);
+}
+
+.context-browser-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.context-browser-pagination-button {
+    padding: 6px 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-secondary);
+    cursor: pointer;
+    font-family: var(--font-ui);
+}
+
+.context-browser-pagination-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.context-browser-pagination-info {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Context Note Viewer Modal */
+.context-note-viewer-no-notes {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.context-note-viewer-label {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.context-note-viewer-preview {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.context-note-viewer-button-container {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.context-note-viewer-next-button {
+    padding: 8px 24px;
+    border: 1px solid var(--interactive-accent);
+    border-radius: 4px;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    font-family: var(--font-ui);
+}
+
+/* Base Modal */
+.base-modal-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 15px;
+}
+
+.base-modal-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.base-modal-header-title-with-button {
+    margin: 0;
+    color: var(--text-accent);
+    font-weight: normal;
+}
+
+.base-modal-header-title {
+    margin: 0;
+    color: var(--text-normal);
+}
+
+.base-modal-button {
+    padding: 4px 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    font-family: var(--font-ui);
+}
+
+.base-modal-button-primary {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.base-modal-button-secondary {
+    background: var(--background-secondary);
+    color: var(--text-normal);
+}
+
+.base-modal-button-accent {
+    background: var(--background-primary);
+    color: var(--interactive-accent);
+    border-color: var(--interactive-accent);
+}
+
+.base-modal-button-accent:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+/* Settings */
+.see-you-again-stats-container {
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+}
+
+/* Note Renderer */
+.note-preview-content {
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.note-preview-fallback {
+    white-space: pre-wrap;
+    font-family: var(--font-monospace);
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+
+.note-renderer-content {
+    /* Container for rendered note content */
+}
+
+.note-renderer-heading {
+    margin: 8px 0 4px 0;
+    font-weight: 600;
+}
+
+.note-renderer-paragraph {
+    margin: 4px 0;
+    line-height: 1.5;
+}
+
+.note-renderer-list {
+    margin: 4px 0;
+    padding-left: 20px;
+}
+
+.note-renderer-code-block {
+    background: var(--background-primary-alt);
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+    overflow-x: auto;
+    font-family: var(--font-monospace);
+}
+
+.note-renderer-inline-code {
+    background: var(--background-primary-alt);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: var(--font-monospace);
+    font-size: 0.9em;
+}
+
+.note-renderer-blockquote {
+    border-left: 3px solid var(--text-accent);
+    margin: 8px 0;
+    padding-left: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.note-renderer-link {
+    color: var(--text-accent);
+    text-decoration: none;
 }

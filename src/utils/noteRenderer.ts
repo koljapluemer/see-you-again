@@ -21,9 +21,6 @@ export class NoteRenderer {
 			
 			// Render markdown using Obsidian's renderer
 			await this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
-
-			// Style the rendered content
-			previewEl.style.cssText = 'font-size: 0.9em; line-height: 1.4;';
 			
 			// Add specific styling for better readability
 			this.styleRenderedContent(previewEl);
@@ -34,7 +31,6 @@ export class NoteRenderer {
 			const fallbackEl = container.createEl('div', { cls: 'note-preview-fallback' });
 			const plainContent = this.removeFrontmatter(content).trim();
 			fallbackEl.textContent = plainContent || 'Empty note';
-			fallbackEl.style.cssText = 'white-space: pre-wrap; font-family: var(--font-monospace); font-size: 0.85em; color: var(--text-muted);';
 		}
 	}
 
@@ -154,46 +150,49 @@ export class NoteRenderer {
 	 * Style rendered content for better readability
 	 */
 	static styleRenderedContent(container: HTMLElement): void {
+		// Add CSS classes to elements for styling
+		container.classList.add('note-renderer-content');
+		
 		// Style headings
 		const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
 		headings.forEach((heading) => {
-			(heading as HTMLElement).style.cssText += 'margin: 8px 0 4px 0; font-weight: 600;';
+			heading.classList.add('note-renderer-heading');
 		});
 
 		// Style paragraphs
 		const paragraphs = container.querySelectorAll('p');
 		paragraphs.forEach((p) => {
-			(p as HTMLElement).style.cssText += 'margin: 4px 0; line-height: 1.5;';
+			p.classList.add('note-renderer-paragraph');
 		});
 
 		// Style lists
 		const lists = container.querySelectorAll('ul, ol');
 		lists.forEach((list) => {
-			(list as HTMLElement).style.cssText += 'margin: 4px 0; padding-left: 20px;';
+			list.classList.add('note-renderer-list');
 		});
 
 		// Style code blocks
 		const codeBlocks = container.querySelectorAll('pre');
 		codeBlocks.forEach((block) => {
-			(block as HTMLElement).style.cssText += 'background: var(--background-primary-alt); padding: 8px; border-radius: 4px; margin: 8px 0; overflow-x: auto; font-family: var(--font-monospace);';
+			block.classList.add('note-renderer-code-block');
 		});
 
 		// Style inline code
 		const inlineCode = container.querySelectorAll('code:not(pre code)');
 		inlineCode.forEach((code) => {
-			(code as HTMLElement).style.cssText += 'background: var(--background-primary-alt); padding: 2px 4px; border-radius: 3px; font-family: var(--font-monospace); font-size: 0.9em;';
+			code.classList.add('note-renderer-inline-code');
 		});
 
 		// Style blockquotes
 		const blockquotes = container.querySelectorAll('blockquote');
 		blockquotes.forEach((quote) => {
-			(quote as HTMLElement).style.cssText += 'border-left: 3px solid var(--text-accent); margin: 8px 0; padding-left: 12px; color: var(--text-muted); font-style: italic;';
+			quote.classList.add('note-renderer-blockquote');
 		});
 
 		// Style links
 		const links = container.querySelectorAll('a');
 		links.forEach((link) => {
-			(link as HTMLElement).style.cssText += 'color: var(--text-accent); text-decoration: none;';
+			link.classList.add('note-renderer-link');
 		});
 	}
 

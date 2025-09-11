@@ -65,45 +65,7 @@ export abstract class BaseNoteModal extends Modal {
 	): HTMLButtonElement {
 		const button = document.createElement('button');
 		button.textContent = text;
-		
-		const baseStyles = `
-			padding: 4px 12px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 12px;
-			transition: all 0.2s ease;
-		`;
-
-		switch (variant) {
-			case 'primary':
-				button.style.cssText = baseStyles + `
-					background: var(--interactive-accent);
-					color: var(--text-on-accent);
-					border-color: var(--interactive-accent);
-				`;
-				break;
-			case 'accent':
-				button.style.cssText = baseStyles + `
-					background: var(--background-primary);
-					color: var(--interactive-accent);
-					border-color: var(--interactive-accent);
-				`;
-				button.addEventListener('mouseenter', () => {
-					button.style.backgroundColor = 'var(--interactive-accent)';
-					button.style.color = 'var(--text-on-accent)';
-				});
-				button.addEventListener('mouseleave', () => {
-					button.style.backgroundColor = 'var(--background-primary)';
-					button.style.color = 'var(--interactive-accent)';
-				});
-				break;
-			default:
-				button.style.cssText = baseStyles + `
-					background: var(--background-secondary);
-					color: var(--text-normal);
-				`;
-		}
+		button.className = `base-modal-button base-modal-button-${variant}`;
 
 		button.addEventListener('click', onClick);
 		return button;
@@ -114,22 +76,22 @@ export abstract class BaseNoteModal extends Modal {
 	 */
 	protected createHeader(title: string, buttonText?: string, buttonClick?: () => void): HTMLElement {
 		const header = this.contentEl.createEl('div');
-		header.style.cssText = 'margin-bottom: 20px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 15px;';
+		header.className = 'base-modal-header';
 		
 		if (buttonText && buttonClick) {
 			// Header with button
 			const headerTop = header.createEl('div');
-			headerTop.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
+			headerTop.className = 'base-modal-header-with-button';
 			
 			const titleEl = headerTop.createEl('h3', { text: title });
-			titleEl.style.cssText = 'margin: 0; color: var(--text-accent); font-weight: normal;';
+			titleEl.className = 'base-modal-header-title-with-button';
 			
 			const button = this.createStyledButton(buttonText, buttonClick, 'accent');
 			headerTop.appendChild(button);
 		} else {
 			// Simple header
 			const titleEl = header.createEl('h2', { text: title });
-			titleEl.style.cssText = 'margin: 0; color: var(--text-normal);';
+			titleEl.className = 'base-modal-header-title';
 		}
 
 		return header;

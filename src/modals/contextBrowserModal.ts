@@ -50,31 +50,24 @@ export class ContextBrowserModal extends Modal {
 
 		// Header
 		const header = contentEl.createEl('div');
-		header.style.cssText = 'margin-bottom: 20px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 15px;';
+		header.className = 'context-browser-header';
 		
 		const title = header.createEl('h2', { text: 'Browse Contexts' });
-		title.style.cssText = 'margin: 0 0 15px 0; color: var(--text-normal);';
+		title.className = 'context-browser-title';
 
 		// Search bar
 		this.searchInput = header.createEl('input', { type: 'text', placeholder: 'Search contexts...' });
-		this.searchInput.style.cssText = `
-			width: 100%;
-			padding: 8px 12px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			background: var(--background-primary);
-			font-size: 14px;
-		`;
+		this.searchInput.className = 'context-browser-search';
 
 		this.searchInput.addEventListener('input', () => this.handleSearch());
 
 		// Context list container
 		this.contextList = contentEl.createEl('div');
-		this.contextList.style.cssText = 'margin-bottom: 20px; min-height: 300px;';
+		this.contextList.className = 'context-browser-list';
 
 		// Pagination controls
 		this.paginationControls = contentEl.createEl('div');
-		this.paginationControls.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--background-modifier-border);';
+		this.paginationControls.className = 'context-browser-pagination';
 
 		this.updateDisplay();
 	}
@@ -110,7 +103,7 @@ export class ContextBrowserModal extends Modal {
 
 		if (this.filteredContexts.length === 0) {
 			const emptyMessage = this.contextList.createEl('div', { text: 'No contexts found' });
-			emptyMessage.style.cssText = 'text-align: center; color: var(--text-muted); font-style: italic; padding: 40px 0;';
+			emptyMessage.className = 'context-browser-empty';
 			return;
 		}
 
@@ -120,27 +113,9 @@ export class ContextBrowserModal extends Modal {
 
 		pageContexts.forEach(context => {
 			const contextItem = this.contextList!.createEl('div');
-			contextItem.style.cssText = `
-				padding: 12px 16px;
-				border: 1px solid var(--background-modifier-border);
-				border-radius: 6px;
-				margin-bottom: 8px;
-				cursor: pointer;
-				transition: all 0.2s ease;
-				background: var(--background-secondary);
-			`;
+			contextItem.className = 'context-browser-item';
 
 			contextItem.textContent = context;
-
-			contextItem.addEventListener('mouseenter', () => {
-				contextItem.style.backgroundColor = 'var(--background-modifier-hover)';
-				contextItem.style.borderColor = 'var(--interactive-accent)';
-			});
-
-			contextItem.addEventListener('mouseleave', () => {
-				contextItem.style.backgroundColor = 'var(--background-secondary)';
-				contextItem.style.borderColor = 'var(--background-modifier-border)';
-			});
 
 			contextItem.addEventListener('click', () => {
 				this.selectContext(context);
@@ -157,14 +132,10 @@ export class ContextBrowserModal extends Modal {
 
 		// Previous button
 		const prevButton = this.paginationControls.createEl('button', { text: 'Previous' });
-		prevButton.style.cssText = `
-			padding: 6px 12px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			background: var(--background-secondary);
-			cursor: pointer;
-			opacity: ${this.currentPage > 0 ? '1' : '0.5'};
-		`;
+		prevButton.className = 'context-browser-pagination-button';
+		if (this.currentPage === 0) {
+			prevButton.classList.add('disabled');
+		}
 		prevButton.disabled = this.currentPage === 0;
 		prevButton.addEventListener('click', () => {
 			if (this.currentPage > 0) {
@@ -176,18 +147,14 @@ export class ContextBrowserModal extends Modal {
 		// Page info
 		const pageInfo = this.paginationControls.createEl('span');
 		pageInfo.textContent = `Page ${this.currentPage + 1} of ${totalPages} (${this.filteredContexts.length} contexts)`;
-		pageInfo.style.cssText = 'color: var(--text-muted); font-size: 14px;';
+		pageInfo.className = 'context-browser-pagination-info';
 
 		// Next button
 		const nextButton = this.paginationControls.createEl('button', { text: 'Next' });
-		nextButton.style.cssText = `
-			padding: 6px 12px;
-			border: 1px solid var(--background-modifier-border);
-			border-radius: 4px;
-			background: var(--background-secondary);
-			cursor: pointer;
-			opacity: ${this.currentPage < totalPages - 1 ? '1' : '0.5'};
-		`;
+		nextButton.className = 'context-browser-pagination-button';
+		if (this.currentPage >= totalPages - 1) {
+			nextButton.classList.add('disabled');
+		}
 		nextButton.disabled = this.currentPage >= totalPages - 1;
 		nextButton.addEventListener('click', () => {
 			if (this.currentPage < totalPages - 1) {

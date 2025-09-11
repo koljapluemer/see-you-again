@@ -80,10 +80,10 @@ export class AddContextModal extends BaseNoteModal {
 		});
 		
 		const buttonContainer = contentEl.createEl('div');
-		buttonContainer.style.cssText = 'margin-top: 20px; text-align: center;';
+		buttonContainer.className = 'modal-no-notes-button-container';
 		
 		const closeButton = buttonContainer.createEl('button', { text: 'Close' });
-		closeButton.style.cssText = 'padding: 8px 16px; border: 1px solid var(--background-modifier-border); border-radius: 4px; background: var(--background-secondary); cursor: pointer;';
+		closeButton.className = 'modal-close-button';
 		closeButton.addEventListener('click', () => this.close());
 	}
 
@@ -98,7 +98,7 @@ export class AddContextModal extends BaseNoteModal {
 
 		// Note preview
 		const previewContainer = contentEl.createEl('div');
-		previewContainer.style.cssText = 'margin-bottom: 20px; padding: 12px; background: var(--background-secondary); border-radius: 6px; max-height: 300px; overflow-y: auto; border: 1px solid var(--background-modifier-border);';
+		previewContainer.className = 'modal-note-preview';
 		
 		try {
 			const noteContent = await this.app.vault.read(this.currentNote);
@@ -124,7 +124,7 @@ export class AddContextModal extends BaseNoteModal {
 
 		// Context fields container
 		const fieldsContainer = contentEl.createEl('div');
-		fieldsContainer.style.cssText = 'margin-bottom: 20px;';
+		fieldsContainer.className = 'modal-fields-container';
 
 		// Initialize field manager
 		this.contextFieldManager = new ContextFieldManager(fieldsContainer, (entries) => {
