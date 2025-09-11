@@ -30,12 +30,38 @@ export class AddContextModal extends Modal {
 
 	private async loadRandomNote(): Promise<void> {
 		try {
+			// First, try to load the previously opened note if it exists and is still eligible
+			if (this.plugin.settings.currentModalNote) {
+				const previousNote = this.app.vault.getAbstractFileByPath(this.plugin.settings.currentModalNote);
+				if (previousNote instanceof TFile) {
+					const isStillEligible = await this.noteService.isNoteEligible(previousNote);
+					if (isStillEligible) {
+						this.currentNote = previousNote;
+						await this.renderModal();
+						return;
+					} else {
+						// Note is no longer eligible, clear it from settings
+						this.plugin.settings.currentModalNote = '';
+						await this.plugin.saveSettings();
+					}
+				} else {
+					// Note no longer exists, clear it from settings
+					this.plugin.settings.currentModalNote = '';
+					await this.plugin.saveSettings();
+				}
+			}
+
+			// If no previous note or it's not eligible, get a random one
 			this.currentNote = await this.noteService.getRandomNote();
 			
 			if (!this.currentNote) {
 				this.showNoNotesMessage();
 				return;
 			}
+
+			// Save the new current note
+			this.plugin.settings.currentModalNote = this.currentNote.path;
+			await this.plugin.saveSettings();
 
 			await this.renderModal();
 		} catch (error) {
@@ -150,6 +176,9 @@ export class AddContextModal extends Modal {
 	}
 
 	private async handleSkip(): Promise<void> {
+		// Clear the current note from settings so we get a new random one
+		this.plugin.settings.currentModalNote = '';
+		await this.plugin.saveSettings();
 		await this.loadRandomNote();
 	}
 
@@ -159,6 +188,10 @@ export class AddContextModal extends Modal {
 		try {
 			await this.noteService.excludeNote(this.currentNote);
 			new Notice(`Excluded "${this.currentNote.basename}" from future sessions`);
+			
+			// Clear the current note from settings and load a new one
+			this.plugin.settings.currentModalNote = '';
+			await this.plugin.saveSettings();
 			await this.loadRandomNote();
 		} catch (error) {
 			console.error('Error excluding note:', error);
@@ -184,6 +217,10 @@ export class AddContextModal extends Modal {
 
 			await this.noteService.saveMetadata(this.currentNote, metadata);
 			new Notice(`Saved contexts for "${this.currentNote.basename}"`);
+			
+			// Clear the current note from settings and load a new one
+			this.plugin.settings.currentModalNote = '';
+			await this.plugin.saveSettings();
 			await this.loadRandomNote();
 		} catch (error) {
 			console.error('Error saving note metadata:', error);

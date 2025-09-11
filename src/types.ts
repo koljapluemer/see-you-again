@@ -1,9 +1,11 @@
 export interface SeeYouAgainSettings {
 	lastProcessedNote: string;
+	currentModalNote: string;
 }
 
 export const DEFAULT_SETTINGS: SeeYouAgainSettings = {
-	lastProcessedNote: ''
+	lastProcessedNote: '',
+	currentModalNote: ''
 };
 
 export type ActionType = 'look-at' | 'memorize' | 'do' | 'iterate' | 'schedule' | 'improve';

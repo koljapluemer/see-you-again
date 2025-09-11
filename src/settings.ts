@@ -23,6 +23,14 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.lastProcessedNote)
 				.setDisabled(true));
 
+		new Setting(containerEl)
+			.setName('Current Modal Note')
+			.setDesc('The note currently shown in the modal (returns to this note when reopening)')
+			.addText(text => text
+				.setPlaceholder('No note currently active')
+				.setValue(this.plugin.settings.currentModalNote)
+				.setDisabled(true));
+
 		// Add a button to reset/clear all processed notes
 		new Setting(containerEl)
 			.setName('Reset Processing History')
@@ -109,6 +117,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 
 			// Reset plugin settings
 			this.plugin.settings.lastProcessedNote = '';
+			this.plugin.settings.currentModalNote = '';
 			await this.plugin.saveSettings();
 
 			// Refresh the stats display

@@ -90,4 +90,12 @@ export class NoteService {
 	async excludeNote(file: TFile): Promise<void> {
 		await this.saveMetadata(file, {});
 	}
+
+	/**
+	 * Check if a specific note is eligible (doesn't have see-you-again metadata)
+	 */
+	async isNoteEligible(file: TFile): Promise<boolean> {
+		const hasMetadata = await this.hasExistingMetadata(file);
+		return !hasMetadata;
+	}
 }
