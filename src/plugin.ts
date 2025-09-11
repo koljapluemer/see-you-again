@@ -3,9 +3,11 @@ import { SeeYouAgainSettings, DEFAULT_SETTINGS } from './types';
 import { AddContextModal } from './modals/addContextModal';
 import { ContextBrowserModal } from './modals/contextBrowserModal';
 import { SeeYouAgainSettingTab } from './settings';
+import { ToolbarManager } from './components/toolbarManager';
 
 export class SeeYouAgainPlugin extends Plugin {
 	settings: SeeYouAgainSettings;
+	toolbarManager: ToolbarManager;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -30,10 +32,16 @@ export class SeeYouAgainPlugin extends Plugin {
 
 		// Add settings tab
 		this.addSettingTab(new SeeYouAgainSettingTab(this.app, this));
+
+		// Initialize toolbar manager
+		this.toolbarManager = new ToolbarManager(this.app, this);
 	}
 
 	onunload(): void {
-		// Clean up if needed
+		// Clean up toolbar manager
+		if (this.toolbarManager) {
+			this.toolbarManager.destroy();
+		}
 	}
 
 	async loadSettings(): Promise<void> {

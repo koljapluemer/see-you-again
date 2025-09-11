@@ -1,8 +1,44 @@
 /*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
+See You Again Plugin Styles
 */
+
+/* Context Toolbar */
+.see-you-again-toolbar {
+    font-family: var(--font-ui);
+}
+
+.see-you-again-toolbar button {
+    font-family: var(--font-ui);
+}
+
+.see-you-again-toolbar input,
+.see-you-again-toolbar select {
+    font-family: var(--font-ui);
+}
+
+/* Ensure toolbar doesn't interfere with editor */
+.workspace-leaf-content {
+    padding-bottom: 45px; /* Space for toolbar */
+}
+
+/* Autocomplete dropdown specific styling */
+.see-you-again-toolbar .autocomplete-dropdown {
+    font-family: var(--font-ui);
+    box-shadow: var(--shadow-s);
+}
+
+/* Context pills */
+.see-you-again-toolbar .context-pill {
+    transition: all 0.15s ease;
+}
+
+.see-you-again-toolbar .context-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Quick add form */
+.see-you-again-toolbar .quick-add-form {
+    border: 1px solid var(--background-modifier-border);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
