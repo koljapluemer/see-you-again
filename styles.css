@@ -1,5 +1,5 @@
 /*
-See You Again Plugin Styles
+See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 */
 
 /* Context Toolbar - Main Container */
@@ -17,8 +17,8 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-/* Ensure toolbar doesn't interfere with editor */
-.workspace-leaf-content {
+/* Ensure toolbar doesn't interfere with editor - ONLY when toolbar is present */
+.workspace-leaf-content:has(.see-you-again-toolbar) {
     padding-bottom: 45px; /* Space for toolbar */
     position: relative;
 }
@@ -260,20 +260,20 @@ See You Again Plugin Styles
     background-color: var(--background-modifier-hover);
 }
 
-/* Modal Components */
-.context-field-row {
+/* Modal Components - Namespaced to see-you-again plugin */
+.see-you-again-modal .context-field-row {
     display: flex;
     gap: 8px;
     margin-bottom: 8px;
     align-items: flex-start;
 }
 
-.modal-input-container {
+.see-you-again-modal .modal-input-container {
     flex: 1;
     position: relative;
 }
 
-.modal-context-input {
+.see-you-again-modal .modal-context-input {
     width: 100%;
     padding: 6px;
     border: 1px solid var(--background-modifier-border);
@@ -282,7 +282,7 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.modal-action-select {
+.see-you-again-modal .modal-action-select {
     padding: 6px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -291,7 +291,7 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.modal-autocomplete-dropdown {
+.see-you-again-modal .modal-autocomplete-dropdown {
     position: absolute;
     top: 100%;
     left: 0;
@@ -307,18 +307,18 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.modal-autocomplete-item {
+.see-you-again-modal .modal-autocomplete-item {
     padding: 8px 12px;
     cursor: pointer;
     border-bottom: 1px solid var(--background-modifier-border-hover);
     transition: background-color 0.1s ease;
 }
 
-.modal-autocomplete-item:hover {
+.see-you-again-modal .modal-autocomplete-item:hover {
     background-color: var(--background-modifier-hover);
 }
 
-.modal-button-container {
+.see-you-again-modal .modal-button-container {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
@@ -326,7 +326,7 @@ See You Again Plugin Styles
     border-top: 1px solid var(--background-modifier-border);
 }
 
-.modal-button {
+.see-you-again-modal .modal-button {
     padding: 8px 16px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -337,35 +337,35 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.modal-button-primary {
+.see-you-again-modal .modal-button-primary {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border-color: var(--interactive-accent);
 }
 
-.modal-button-secondary {
+.see-you-again-modal .modal-button-secondary {
     background: var(--background-secondary);
     color: var(--text-normal);
 }
 
-.modal-button-destructive {
+.see-you-again-modal .modal-button-destructive {
     background: var(--background-secondary);
     color: var(--text-error);
     border: 1px solid var(--text-error);
 }
 
-.modal-button-destructive:hover {
+.see-you-again-modal .modal-button-destructive:hover {
     background: var(--background-modifier-error-hover);
     color: var(--text-on-accent);
 }
 
 /* Add Context Modal */
-.modal-no-notes-button-container {
+.see-you-again-modal .modal-no-notes-button-container {
     margin-top: 20px;
     text-align: center;
 }
 
-.modal-close-button {
+.see-you-again-modal .modal-close-button {
     padding: 8px 16px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -374,7 +374,7 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.modal-note-preview {
+.see-you-again-modal .modal-note-preview {
     margin-bottom: 20px;
     padding: 12px;
     background: var(--background-secondary);
@@ -384,23 +384,23 @@ See You Again Plugin Styles
     border: 1px solid var(--background-modifier-border);
 }
 
-.modal-fields-container {
+.see-you-again-modal .modal-fields-container {
     margin-bottom: 20px;
 }
 
 /* Context Browser Modal */
-.context-browser-header {
+.see-you-again-modal .context-browser-header {
     margin-bottom: 20px;
     border-bottom: 1px solid var(--background-modifier-border);
     padding-bottom: 15px;
 }
 
-.context-browser-title {
+.see-you-again-modal .context-browser-title {
     margin: 0 0 15px 0;
     color: var(--text-normal);
 }
 
-.context-browser-search {
+.see-you-again-modal .context-browser-search {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid var(--background-modifier-border);
@@ -410,19 +410,19 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.context-browser-list {
+.see-you-again-modal .context-browser-list {
     margin-bottom: 20px;
     min-height: 300px;
 }
 
-.context-browser-empty {
+.see-you-again-modal .context-browser-empty {
     text-align: center;
     color: var(--text-muted);
     font-style: italic;
     padding: 40px 0;
 }
 
-.context-browser-item {
+.see-you-again-modal .context-browser-item {
     padding: 12px 16px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 6px;
@@ -432,12 +432,12 @@ See You Again Plugin Styles
     background: var(--background-secondary);
 }
 
-.context-browser-item:hover {
+.see-you-again-modal .context-browser-item:hover {
     background: var(--background-modifier-hover);
     border-color: var(--interactive-accent);
 }
 
-.context-browser-pagination {
+.see-you-again-modal .context-browser-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -446,7 +446,7 @@ See You Again Plugin Styles
     border-top: 1px solid var(--background-modifier-border);
 }
 
-.context-browser-pagination-button {
+.see-you-again-modal .context-browser-pagination-button {
     padding: 6px 12px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -455,29 +455,29 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.context-browser-pagination-button.disabled {
+.see-you-again-modal .context-browser-pagination-button.disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.context-browser-pagination-info {
+.see-you-again-modal .context-browser-pagination-info {
     color: var(--text-muted);
     font-size: 14px;
 }
 
 /* Context Note Viewer Modal */
-.context-note-viewer-no-notes {
+.see-you-again-modal .context-note-viewer-no-notes {
     text-align: center;
     padding: 40px 20px;
 }
 
-.context-note-viewer-label {
+.see-you-again-modal .context-note-viewer-label {
     font-size: 14px;
     color: var(--text-muted);
     margin-bottom: 8px;
 }
 
-.context-note-viewer-preview {
+.see-you-again-modal .context-note-viewer-preview {
     margin-bottom: 20px;
     padding: 12px;
     background: var(--background-secondary);
@@ -487,14 +487,14 @@ See You Again Plugin Styles
     border: 1px solid var(--background-modifier-border);
 }
 
-.context-note-viewer-button-container {
+.see-you-again-modal .context-note-viewer-button-container {
     text-align: center;
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--background-modifier-border);
 }
 
-.context-note-viewer-next-button {
+.see-you-again-modal .context-note-viewer-next-button {
     padding: 8px 24px;
     border: 1px solid var(--interactive-accent);
     border-radius: 4px;
@@ -507,31 +507,31 @@ See You Again Plugin Styles
 }
 
 /* Base Modal */
-.base-modal-header {
+.see-you-again-modal .base-modal-header {
     margin-bottom: 20px;
     border-bottom: 1px solid var(--background-modifier-border);
     padding-bottom: 15px;
 }
 
-.base-modal-header-with-button {
+.see-you-again-modal .base-modal-header-with-button {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
 }
 
-.base-modal-header-title-with-button {
+.see-you-again-modal .base-modal-header-title-with-button {
     margin: 0;
     color: var(--text-accent);
     font-weight: normal;
 }
 
-.base-modal-header-title {
+.see-you-again-modal .base-modal-header-title {
     margin: 0;
     color: var(--text-normal);
 }
 
-.base-modal-button {
+.see-you-again-modal .base-modal-button {
     padding: 4px 12px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -541,24 +541,24 @@ See You Again Plugin Styles
     font-family: var(--font-ui);
 }
 
-.base-modal-button-primary {
+.see-you-again-modal .base-modal-button-primary {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
     border-color: var(--interactive-accent);
 }
 
-.base-modal-button-secondary {
+.see-you-again-modal .base-modal-button-secondary {
     background: var(--background-secondary);
     color: var(--text-normal);
 }
 
-.base-modal-button-accent {
+.see-you-again-modal .base-modal-button-accent {
     background: var(--background-primary);
     color: var(--interactive-accent);
     border-color: var(--interactive-accent);
 }
 
-.base-modal-button-accent:hover {
+.see-you-again-modal .base-modal-button-accent:hover {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
 }
@@ -571,39 +571,39 @@ See You Again Plugin Styles
     border-radius: 6px;
 }
 
-/* Note Renderer */
-.note-preview-content {
+/* Note Renderer - Namespaced to see-you-again plugin */
+.see-you-again-modal .note-preview-content {
     font-size: 0.9em;
     line-height: 1.4;
 }
 
-.note-preview-fallback {
+.see-you-again-modal .note-preview-fallback {
     white-space: pre-wrap;
     font-family: var(--font-monospace);
     font-size: 0.85em;
     color: var(--text-muted);
 }
 
-.note-renderer-content {
+.see-you-again-modal .note-renderer-content {
     /* Container for rendered note content */
 }
 
-.note-renderer-heading {
+.see-you-again-modal .note-renderer-heading {
     margin: 8px 0 4px 0;
     font-weight: 600;
 }
 
-.note-renderer-paragraph {
+.see-you-again-modal .note-renderer-paragraph {
     margin: 4px 0;
     line-height: 1.5;
 }
 
-.note-renderer-list {
+.see-you-again-modal .note-renderer-list {
     margin: 4px 0;
     padding-left: 20px;
 }
 
-.note-renderer-code-block {
+.see-you-again-modal .note-renderer-code-block {
     background: var(--background-primary-alt);
     padding: 8px;
     border-radius: 4px;
@@ -612,7 +612,7 @@ See You Again Plugin Styles
     font-family: var(--font-monospace);
 }
 
-.note-renderer-inline-code {
+.see-you-again-modal .note-renderer-inline-code {
     background: var(--background-primary-alt);
     padding: 2px 4px;
     border-radius: 3px;
@@ -620,7 +620,7 @@ See You Again Plugin Styles
     font-size: 0.9em;
 }
 
-.note-renderer-blockquote {
+.see-you-again-modal .note-renderer-blockquote {
     border-left: 3px solid var(--text-accent);
     margin: 8px 0;
     padding-left: 12px;
@@ -628,7 +628,7 @@ See You Again Plugin Styles
     font-style: italic;
 }
 
-.note-renderer-link {
+.see-you-again-modal .note-renderer-link {
     color: var(--text-accent);
     text-decoration: none;
 }

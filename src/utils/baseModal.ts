@@ -10,6 +10,12 @@ export abstract class BaseNoteModal extends Modal {
 		this.plugin = plugin;
 	}
 
+	onOpen() {
+		// Add our namespace class to the modal
+		this.containerEl.addClass('see-you-again-modal');
+		super.onOpen();
+	}
+
 	/**
 	 * Jump to the current note in a new tab
 	 */

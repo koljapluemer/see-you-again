@@ -23,6 +23,8 @@ export class ContextBrowserModal extends Modal {
 	}
 
 	async onOpen(): Promise<void> {
+		// Add our namespace class to the modal
+		this.containerEl.addClass('see-you-again-modal');
 		await this.loadContexts();
 		this.renderModal();
 	}
