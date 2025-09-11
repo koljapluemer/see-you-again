@@ -1,4 +1,4 @@
-import { App, Modal, TFile, Notice, Plugin } from 'obsidian';
+import { App, Modal, TFile, Notice, Plugin, MarkdownRenderer } from 'obsidian';
 import { NoteService } from './noteService';
 import { ContextFieldManager, ModalButtonManager } from './modalComponents';
 import { ContextEntry, SeeYouAgainFrontmatter, SeeYouAgainSettings } from './types';
@@ -70,30 +70,35 @@ export class AddContextModal extends Modal {
 		const header = contentEl.createEl('div');
 		header.style.cssText = 'margin-bottom: 20px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 15px;';
 		
-		const title = header.createEl('h2', { text: 'Add Context to Note' });
-		title.style.cssText = 'margin: 0 0 8px 0; color: var(--text-normal);';
 		
 		const noteTitle = header.createEl('h3', { text: this.currentNote.basename });
 		noteTitle.style.cssText = 'margin: 0; color: var(--text-accent); font-weight: normal;';
 
 		// Note preview
 		const previewContainer = contentEl.createEl('div');
-		previewContainer.style.cssText = 'margin-bottom: 20px; padding: 12px; background: var(--background-secondary); border-radius: 6px; max-height: 200px; overflow-y: auto;';
+		previewContainer.style.cssText = 'margin-bottom: 20px; padding: 12px; background: var(--background-secondary); border-radius: 6px; max-height: 300px; overflow-y: auto; border: 1px solid var(--background-modifier-border);';
 		
 		try {
 			const noteContent = await this.app.vault.read(this.currentNote);
-			const preview = noteContent.length > 300 ? noteContent.substring(0, 300) + '...' : noteContent;
-			previewContainer.createEl('div', { text: preview || 'Empty note' });
+			if (!noteContent || noteContent.trim().length === 0) {
+				previewContainer.createEl('div', { 
+					text: 'This note is empty',
+					cls: 'note-preview-empty'
+				});
+				previewContainer.style.fontStyle = 'italic';
+				previewContainer.style.color = 'var(--text-muted)';
+			} else {
+				// Render the markdown content
+				await this.renderNoteContent(previewContainer, noteContent);
+			}
 		} catch (error) {
-			previewContainer.createEl('div', { text: 'Could not load note preview' });
+			console.error('Error loading note content:', error);
+			previewContainer.createEl('div', { 
+				text: 'Could not load note preview',
+				cls: 'note-preview-error'
+			});
+			previewContainer.style.color = 'var(--text-error)';
 		}
-
-		// Instructions
-		const instructionsContainer = contentEl.createEl('div');
-		instructionsContainer.style.cssText = 'margin-bottom: 20px;';
-		instructionsContainer.createEl('p', { 
-			text: 'Add usage contexts for this note. As you type in the last field, a new one will appear.' 
-		});
 
 		// Context fields container
 		const fieldsContainer = contentEl.createEl('div');
@@ -111,8 +116,7 @@ export class AddContextModal extends Modal {
 		this.buttonManager = new ModalButtonManager(buttonsContainer, {
 			onSkip: () => this.handleSkip(),
 			onExclude: () => this.handleExclude(),
-			onSave: () => this.handleSave(),
-			onNext: () => this.handleNext(),
+			onNext: () => this.handleSaveAndNext(),
 			isValidForm: () => this.contextFieldManager?.hasValidEntries() || false
 		});
 	}
@@ -158,7 +162,216 @@ export class AddContextModal extends Modal {
 		}
 	}
 
-	private async handleNext(): Promise<void> {
+	private async handleSaveAndNext(): Promise<void> {
 		await this.handleSave();
+	}
+
+	private async renderNoteContent(container: HTMLElement, content: string): Promise<void> {
+		try {
+			// Remove frontmatter if present
+			const contentWithoutFrontmatter = this.removeFrontmatter(content);
+			
+			// Limit content length for preview
+			const maxLength = 1000;
+			let previewContent = contentWithoutFrontmatter.trim();
+			let isTruncated = false;
+
+			if (previewContent.length > maxLength) {
+				// Try to cut at a reasonable point (end of sentence or paragraph)
+				const cutPoint = previewContent.lastIndexOf('\n\n', maxLength) || 
+								previewContent.lastIndexOf('. ', maxLength) ||
+								previewContent.lastIndexOf('\n', maxLength);
+				
+				if (cutPoint > maxLength * 0.7) { // Only use cutPoint if it's not too early
+					previewContent = previewContent.substring(0, cutPoint);
+				} else {
+					previewContent = previewContent.substring(0, maxLength);
+				}
+				isTruncated = true;
+			}
+
+			// Use Obsidian's markdown renderer
+			const previewEl = container.createEl('div', { cls: 'note-preview-content' });
+			
+			// Render markdown using Obsidian's renderer
+			await this.renderMarkdown(previewContent, previewEl);
+
+			// Add truncation indicator
+			if (isTruncated) {
+				const truncationIndicator = container.createEl('div', {
+					text: '... (content truncated)',
+					cls: 'note-preview-truncated'
+				});
+				truncationIndicator.style.cssText = 'margin-top: 8px; font-style: italic; color: var(--text-muted); font-size: 0.9em;';
+			}
+
+			// Style the rendered content
+			previewEl.style.cssText = 'font-size: 0.9em; line-height: 1.4;';
+			
+			// Add specific styling for better readability
+			this.styleRenderedContent(previewEl);
+
+		} catch (error) {
+			console.error('Error rendering note content:', error);
+			// Fallback to plain text
+			const fallbackEl = container.createEl('div', { cls: 'note-preview-fallback' });
+			const plainContent = this.removeFrontmatter(content).trim();
+			const preview = plainContent.length > 500 ? plainContent.substring(0, 500) + '...' : plainContent;
+			fallbackEl.textContent = preview || 'Empty note';
+			fallbackEl.style.cssText = 'white-space: pre-wrap; font-family: var(--font-monospace); font-size: 0.85em; color: var(--text-muted);';
+		}
+	}
+
+	private async renderMarkdown(content: string, container: HTMLElement): Promise<void> {
+		try {
+			// Use Obsidian's MarkdownRenderer
+			await MarkdownRenderer.renderMarkdown(
+				content,
+				container,
+				this.currentNote?.path || '',
+				this.plugin
+			);
+		} catch (error) {
+			console.error('Error with markdown renderer:', error);
+			// Fallback to basic markdown rendering
+			this.renderBasicMarkdown(content, container);
+		}
+	}
+
+	private renderBasicMarkdown(content: string, container: HTMLElement): void {
+		// Basic markdown rendering for fallback
+		const lines = content.split('\n');
+		let inCodeBlock = false;
+		let currentParagraph = '';
+
+		for (const line of lines) {
+			if (line.startsWith('```')) {
+				if (currentParagraph) {
+					this.addParagraph(container, currentParagraph);
+					currentParagraph = '';
+				}
+				inCodeBlock = !inCodeBlock;
+				if (inCodeBlock) {
+					container.createEl('pre', { text: '', cls: 'code-block' });
+				}
+				continue;
+			}
+
+			if (inCodeBlock) {
+				const lastPre = container.querySelector('pre:last-child');
+				if (lastPre) {
+					lastPre.textContent += line + '\n';
+				}
+				continue;
+			}
+
+			if (line.trim() === '') {
+				if (currentParagraph) {
+					this.addParagraph(container, currentParagraph);
+					currentParagraph = '';
+				}
+				continue;
+			}
+
+			if (line.startsWith('#')) {
+				if (currentParagraph) {
+					this.addParagraph(container, currentParagraph);
+					currentParagraph = '';
+				}
+				const level = Math.min(line.match(/^#+/)?.[0].length || 1, 6);
+				const text = line.replace(/^#+\s*/, '');
+				const headingTag = `h${level}` as keyof HTMLElementTagNameMap;
+				container.createEl(headingTag, { text });
+				continue;
+			}
+
+			if (line.startsWith('- ') || line.startsWith('* ')) {
+				if (currentParagraph) {
+					this.addParagraph(container, currentParagraph);
+					currentParagraph = '';
+				}
+				const listItem = container.createEl('li', { text: line.substring(2) });
+				continue;
+			}
+
+			currentParagraph += (currentParagraph ? ' ' : '') + line;
+		}
+
+		if (currentParagraph) {
+			this.addParagraph(container, currentParagraph);
+		}
+	}
+
+	private addParagraph(container: HTMLElement, text: string): void {
+		const p = container.createEl('p');
+		// Handle basic inline formatting
+		const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/);
+		
+		for (const part of parts) {
+			if (part.startsWith('**') && part.endsWith('**')) {
+				p.createEl('strong', { text: part.slice(2, -2) });
+			} else if (part.startsWith('*') && part.endsWith('*')) {
+				p.createEl('em', { text: part.slice(1, -1) });
+			} else if (part.startsWith('`') && part.endsWith('`')) {
+				p.createEl('code', { text: part.slice(1, -1) });
+			} else {
+				p.appendText(part);
+			}
+		}
+	}
+
+	private styleRenderedContent(container: HTMLElement): void {
+		// Style headings
+		const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
+		headings.forEach((heading) => {
+			(heading as HTMLElement).style.cssText += 'margin: 8px 0 4px 0; font-weight: 600;';
+		});
+
+		// Style paragraphs
+		const paragraphs = container.querySelectorAll('p');
+		paragraphs.forEach((p) => {
+			(p as HTMLElement).style.cssText += 'margin: 4px 0; line-height: 1.5;';
+		});
+
+		// Style lists
+		const lists = container.querySelectorAll('ul, ol');
+		lists.forEach((list) => {
+			(list as HTMLElement).style.cssText += 'margin: 4px 0; padding-left: 20px;';
+		});
+
+		// Style code blocks
+		const codeBlocks = container.querySelectorAll('pre');
+		codeBlocks.forEach((block) => {
+			(block as HTMLElement).style.cssText += 'background: var(--background-primary-alt); padding: 8px; border-radius: 4px; margin: 8px 0; overflow-x: auto; font-family: var(--font-monospace);';
+		});
+
+		// Style inline code
+		const inlineCode = container.querySelectorAll('code:not(pre code)');
+		inlineCode.forEach((code) => {
+			(code as HTMLElement).style.cssText += 'background: var(--background-primary-alt); padding: 2px 4px; border-radius: 3px; font-family: var(--font-monospace); font-size: 0.9em;';
+		});
+
+		// Style blockquotes
+		const blockquotes = container.querySelectorAll('blockquote');
+		blockquotes.forEach((quote) => {
+			(quote as HTMLElement).style.cssText += 'border-left: 3px solid var(--text-accent); margin: 8px 0; padding-left: 12px; color: var(--text-muted); font-style: italic;';
+		});
+
+		// Style links
+		const links = container.querySelectorAll('a');
+		links.forEach((link) => {
+			(link as HTMLElement).style.cssText += 'color: var(--text-accent); text-decoration: none;';
+		});
+	}
+
+	private removeFrontmatter(content: string): string {
+		// Remove YAML frontmatter if present
+		if (content.startsWith('---')) {
+			const frontmatterEnd = content.indexOf('---', 3);
+			if (frontmatterEnd !== -1) {
+				return content.substring(frontmatterEnd + 3).trim();
+			}
+		}
+		return content;
 	}
 }

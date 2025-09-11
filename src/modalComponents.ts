@@ -102,7 +102,6 @@ export class ModalButtonManager {
 	private container: HTMLElement;
 	private onSkip: () => void;
 	private onExclude: () => void;
-	private onSave: () => void;
 	private onNext: () => void;
 	private isValidForm: () => boolean;
 
@@ -111,7 +110,6 @@ export class ModalButtonManager {
 		callbacks: {
 			onSkip: () => void;
 			onExclude: () => void;
-			onSave: () => void;
 			onNext: () => void;
 			isValidForm: () => boolean;
 		}
@@ -119,7 +117,6 @@ export class ModalButtonManager {
 		this.container = container;
 		this.onSkip = callbacks.onSkip;
 		this.onExclude = callbacks.onExclude;
-		this.onSave = callbacks.onSave;
 		this.onNext = callbacks.onNext;
 		this.isValidForm = callbacks.isValidForm;
 		this.render();
@@ -144,8 +141,17 @@ export class ModalButtonManager {
 				button.style.color = 'var(--text-on-accent)';
 				break;
 			case 'destructive':
-				button.style.backgroundColor = 'var(--background-modifier-error)';
+				button.style.backgroundColor = 'var(--background-secondary)';
 				button.style.color = 'var(--text-error)';
+				button.style.border = '1px solid var(--text-error)';
+				button.addEventListener('mouseenter', () => {
+					button.style.backgroundColor = 'var(--background-modifier-error-hover)';
+					button.style.color = 'var(--text-on-accent)';
+				});
+				button.addEventListener('mouseleave', () => {
+					button.style.backgroundColor = 'var(--background-secondary)';
+					button.style.color = 'var(--text-error)';
+				});
 				break;
 			default:
 				button.style.backgroundColor = 'var(--background-secondary)';
@@ -170,11 +176,9 @@ export class ModalButtonManager {
 		leftButtons.appendChild(excludeButton);
 
 		// Right side buttons
-		const saveButton = this.createButton('Save', this.onSave, 'primary');
-		const nextButton = this.createButton('Next', this.onNext, 'primary');
+		const saveAndNextButton = this.createButton('Save & Next', this.onNext, 'primary');
 
-		rightButtons.appendChild(saveButton);
-		rightButtons.appendChild(nextButton);
+		rightButtons.appendChild(saveAndNextButton);
 
 		this.container.appendChild(leftButtons);
 		this.container.appendChild(rightButtons);
@@ -184,21 +188,24 @@ export class ModalButtonManager {
 	}
 
 	updateButtonStates(): void {
-		const nextButton = this.container.querySelector('button:last-child') as HTMLButtonElement;
-		const saveButton = this.container.querySelector('button:nth-last-child(2)') as HTMLButtonElement;
+		// Find ONLY the Save & Next button by text content, not position
+		const allButtons = Array.from(this.container.querySelectorAll('button'));
+		let saveAndNextButton: HTMLButtonElement | null = null;
+		
+		for (const button of allButtons) {
+			if (button.textContent === 'Save & Next') {
+				saveAndNextButton = button;
+				break;
+			}
+		}
 		
 		const isValid = this.isValidForm();
 		
-		if (nextButton) {
-			nextButton.disabled = !isValid;
-			nextButton.style.opacity = isValid ? '1' : '0.5';
-			nextButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
-		}
-		
-		if (saveButton) {
-			saveButton.disabled = !isValid;
-			saveButton.style.opacity = isValid ? '1' : '0.5';
-			saveButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+		// ONLY touch the Save & Next button, NEVER any other button
+		if (saveAndNextButton) {
+			saveAndNextButton.disabled = !isValid;
+			saveAndNextButton.style.opacity = isValid ? '1' : '0.5';
+			saveAndNextButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
 		}
 	}
 }
