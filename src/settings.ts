@@ -15,31 +15,15 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 
 		containerEl.createEl('h2', { text: 'See You Again Settings' });
 
-		new Setting(containerEl)
-			.setName('Last Processed Note')
-			.setDesc('The last note that was processed (for internal tracking)')
-			.addText(text => text
-				.setPlaceholder('No note processed yet')
-				.setValue(this.plugin.settings.lastProcessedNote)
-				.setDisabled(true));
-
-		new Setting(containerEl)
-			.setName('Current Modal Note')
-			.setDesc('The note currently shown in the modal (returns to this note when reopening)')
-			.addText(text => text
-				.setPlaceholder('No note currently active')
-				.setValue(this.plugin.settings.currentModalNote)
-				.setDisabled(true));
-
 		// Add a button to reset/clear all processed notes
 		new Setting(containerEl)
-			.setName('Reset Processing History')
-			.setDesc('Clear the tracking of which notes have been processed. This will make all notes available again.')
+			.setName('Reset All Notes')
+			.setDesc('Clear all "see-you-again" metadata from your notes. This will make all notes available for processing again.')
 			.addButton(button => button
 				.setButtonText('Reset All Notes')
 				.setCta()
 				.onClick(async () => {
-					if (confirm('This will make all notes available for processing again. Continue?')) {
+					if (confirm('This will remove all "see-you-again" metadata from your notes and make them available for processing again. Continue?')) {
 						await this.resetAllNotes();
 					}
 				}));
