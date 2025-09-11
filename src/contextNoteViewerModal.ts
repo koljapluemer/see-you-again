@@ -176,35 +176,11 @@ export class ContextNoteViewerModal extends Modal {
 	private async renderNoteContent(container: HTMLElement, content: string): Promise<void> {
 		try {
 			const contentWithoutFrontmatter = this.removeFrontmatter(content);
-			
-			const maxLength = 1500;
-			let previewContent = contentWithoutFrontmatter.trim();
-			let isTruncated = false;
-
-			if (previewContent.length > maxLength) {
-				const cutPoint = previewContent.lastIndexOf('\n\n', maxLength) || 
-								previewContent.lastIndexOf('. ', maxLength) ||
-								previewContent.lastIndexOf('\n', maxLength);
-				
-				if (cutPoint > maxLength * 0.7) {
-					previewContent = previewContent.substring(0, cutPoint);
-				} else {
-					previewContent = previewContent.substring(0, maxLength);
-				}
-				isTruncated = true;
-			}
+			const previewContent = contentWithoutFrontmatter.trim();
 
 			const previewEl = container.createEl('div', { cls: 'note-preview-content' });
 			
 			await this.renderMarkdown(previewContent, previewEl);
-
-			if (isTruncated) {
-				const truncationIndicator = container.createEl('div', {
-					text: '... (content truncated)',
-					cls: 'note-preview-truncated'
-				});
-				truncationIndicator.style.cssText = 'margin-top: 8px; font-style: italic; color: var(--text-muted); font-size: 0.9em;';
-			}
 
 			previewEl.style.cssText = 'font-size: 0.9em; line-height: 1.4;';
 			this.styleRenderedContent(previewEl);
@@ -213,8 +189,7 @@ export class ContextNoteViewerModal extends Modal {
 			console.error('Error rendering note content:', error);
 			const fallbackEl = container.createEl('div', { cls: 'note-preview-fallback' });
 			const plainContent = this.removeFrontmatter(content).trim();
-			const preview = plainContent.length > 500 ? plainContent.substring(0, 500) + '...' : plainContent;
-			fallbackEl.textContent = preview || 'Empty note';
+			fallbackEl.textContent = plainContent || 'Empty note';
 			fallbackEl.style.cssText = 'white-space: pre-wrap; font-family: var(--font-monospace); font-size: 0.85em; color: var(--text-muted);';
 		}
 	}

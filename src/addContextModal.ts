@@ -261,40 +261,13 @@ export class AddContextModal extends Modal {
 		try {
 			// Remove frontmatter if present
 			const contentWithoutFrontmatter = this.removeFrontmatter(content);
-			
-			// Limit content length for preview
-			const maxLength = 1000;
-			let previewContent = contentWithoutFrontmatter.trim();
-			let isTruncated = false;
-
-			if (previewContent.length > maxLength) {
-				// Try to cut at a reasonable point (end of sentence or paragraph)
-				const cutPoint = previewContent.lastIndexOf('\n\n', maxLength) || 
-								previewContent.lastIndexOf('. ', maxLength) ||
-								previewContent.lastIndexOf('\n', maxLength);
-				
-				if (cutPoint > maxLength * 0.7) { // Only use cutPoint if it's not too early
-					previewContent = previewContent.substring(0, cutPoint);
-				} else {
-					previewContent = previewContent.substring(0, maxLength);
-				}
-				isTruncated = true;
-			}
+			const previewContent = contentWithoutFrontmatter.trim();
 
 			// Use Obsidian's markdown renderer
 			const previewEl = container.createEl('div', { cls: 'note-preview-content' });
 			
 			// Render markdown using Obsidian's renderer
 			await this.renderMarkdown(previewContent, previewEl);
-
-			// Add truncation indicator
-			if (isTruncated) {
-				const truncationIndicator = container.createEl('div', {
-					text: '... (content truncated)',
-					cls: 'note-preview-truncated'
-				});
-				truncationIndicator.style.cssText = 'margin-top: 8px; font-style: italic; color: var(--text-muted); font-size: 0.9em;';
-			}
 
 			// Style the rendered content
 			previewEl.style.cssText = 'font-size: 0.9em; line-height: 1.4;';
@@ -307,8 +280,7 @@ export class AddContextModal extends Modal {
 			// Fallback to plain text
 			const fallbackEl = container.createEl('div', { cls: 'note-preview-fallback' });
 			const plainContent = this.removeFrontmatter(content).trim();
-			const preview = plainContent.length > 500 ? plainContent.substring(0, 500) + '...' : plainContent;
-			fallbackEl.textContent = preview || 'Empty note';
+			fallbackEl.textContent = plainContent || 'Empty note';
 			fallbackEl.style.cssText = 'white-space: pre-wrap; font-family: var(--font-monospace); font-size: 0.85em; color: var(--text-muted);';
 		}
 	}
