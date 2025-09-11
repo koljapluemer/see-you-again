@@ -24,6 +24,9 @@ export class AddContextModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		this.currentNote = null;
+		
+		// Clean up autocomplete instances
+		this.contextFieldManager?.destroy();
 		this.contextFieldManager = null;
 		this.buttonManager = null;
 	}
@@ -162,6 +165,9 @@ export class AddContextModal extends Modal {
 		this.contextFieldManager = new ContextFieldManager(fieldsContainer, (entries) => {
 			this.buttonManager?.updateButtonStates();
 		});
+
+		// Load past contexts asynchronously (quality of life, don't wait)
+		this.loadPastContextsAsync();
 
 		// Buttons container
 		const buttonsContainer = contentEl.createEl('div');
@@ -460,6 +466,21 @@ export class AddContextModal extends Modal {
 			.replace(/^-+|-+$/g, '')
 			// Ensure we don't end up with an empty string
 			|| 'context';
+	}
+
+	private async loadPastContextsAsync(): Promise<void> {
+		try {
+			// Load past contexts in the background
+			const pastContexts = await this.noteService.getAllPastContexts();
+			
+			// Update the field manager with the loaded contexts
+			if (this.contextFieldManager) {
+				this.contextFieldManager.setPastContexts(pastContexts);
+			}
+		} catch (error) {
+			console.error('Error loading past contexts for autocomplete:', error);
+			// Fail silently - this is just quality of life, not critical functionality
+		}
 	}
 
 	private removeFrontmatter(content: string): string {

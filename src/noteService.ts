@@ -98,4 +98,38 @@ export class NoteService {
 		const hasMetadata = await this.hasExistingMetadata(file);
 		return !hasMetadata;
 	}
+
+	/**
+	 * Get all unique contexts that have been used in the past
+	 */
+	async getAllPastContexts(): Promise<string[]> {
+		const allFiles = this.getAllMarkdownFiles();
+		const contextSet = new Set<string>();
+
+		for (const file of allFiles) {
+			try {
+				const fileCache = this.app.metadataCache.getFileCache(file);
+				const frontmatter = fileCache?.frontmatter;
+				
+				if (frontmatter && frontmatter['see-you-again']) {
+					const seeYouAgain = frontmatter['see-you-again'];
+					
+					// Handle object format (current implementation)
+					if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
+						Object.keys(seeYouAgain).forEach(context => {
+							if (context && context.trim()) {
+								// Hydrate: replace dashes with spaces for display
+								const hydratedContext = context.replace(/-/g, ' ');
+								contextSet.add(hydratedContext);
+							}
+						});
+					}
+				}
+			} catch (error) {
+				console.error('Error reading contexts from file:', file.path, error);
+			}
+		}
+
+		return Array.from(contextSet).sort();
+	}
 }
