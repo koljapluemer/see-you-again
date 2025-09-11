@@ -70,9 +70,37 @@ export class AddContextModal extends Modal {
 		const header = contentEl.createEl('div');
 		header.style.cssText = 'margin-bottom: 20px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 15px;';
 		
+		// Header top row with title and jump button
+		const headerTop = header.createEl('div');
+		headerTop.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;';
 		
-		const noteTitle = header.createEl('h3', { text: this.currentNote.basename });
+		const noteTitle = headerTop.createEl('h3', { text: this.currentNote.basename });
 		noteTitle.style.cssText = 'margin: 0; color: var(--text-accent); font-weight: normal;';
+		
+		// Jump to Note button
+		const jumpButton = headerTop.createEl('button', { text: 'Jump to Note' });
+		jumpButton.style.cssText = `
+			padding: 4px 12px;
+			border: 1px solid var(--interactive-accent);
+			border-radius: 4px;
+			background: var(--background-primary);
+			color: var(--interactive-accent);
+			cursor: pointer;
+			font-size: 12px;
+			transition: all 0.2s ease;
+		`;
+		
+		jumpButton.addEventListener('mouseenter', () => {
+			jumpButton.style.backgroundColor = 'var(--interactive-accent)';
+			jumpButton.style.color = 'var(--text-on-accent)';
+		});
+		
+		jumpButton.addEventListener('mouseleave', () => {
+			jumpButton.style.backgroundColor = 'var(--background-primary)';
+			jumpButton.style.color = 'var(--interactive-accent)';
+		});
+		
+		jumpButton.addEventListener('click', () => this.handleJumpToNote());
 
 		// Note preview
 		const previewContainer = contentEl.createEl('div');
@@ -165,6 +193,25 @@ export class AddContextModal extends Modal {
 
 	private async handleSaveAndNext(): Promise<void> {
 		await this.handleSave();
+	}
+
+	private async handleJumpToNote(): Promise<void> {
+		if (!this.currentNote) return;
+
+		try {
+			// Open the note in a new leaf (tab)
+			const leaf = this.app.workspace.getLeaf('tab');
+			await leaf.openFile(this.currentNote);
+			
+			// Focus the new leaf
+			this.app.workspace.setActiveLeaf(leaf);
+			
+			// Close the modal
+			this.close();
+		} catch (error) {
+			console.error('Error jumping to note:', error);
+			new Notice('Error opening note. Please try again.');
+		}
 	}
 
 	private async renderNoteContent(container: HTMLElement, content: string): Promise<void> {
