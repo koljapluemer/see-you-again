@@ -1,7 +1,7 @@
 import { Plugin } from 'obsidian';
 import { SeeYouAgainSettings, DEFAULT_SETTINGS } from './types';
-import { AddContextModal } from './addContextModal';
-import { ContextBrowserModal } from './contextBrowserModal';
+import { AddContextModal } from './modals/addContextModal';
+import { ContextBrowserModal } from './modals/contextBrowserModal';
 import { SeeYouAgainSettingTab } from './settings';
 
 export class SeeYouAgainPlugin extends Plugin {

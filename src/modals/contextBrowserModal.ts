@@ -1,7 +1,9 @@
 import { App, Modal, Notice, Plugin } from 'obsidian';
-import { NoteService } from './noteService';
-import { SeeYouAgainSettings } from './types';
+import { NoteService } from '../noteService';
+import { SeeYouAgainSettings } from '../types';
 import { ContextNoteViewerModal } from './contextNoteViewerModal';
+import { FuzzySearch } from '../utils/fuzzySearch';
+import { ContextUtils } from '../utils/contextUtils';
 
 export class ContextBrowserModal extends Modal {
 	private plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> };
@@ -93,36 +95,7 @@ export class ContextBrowserModal extends Modal {
 	}
 
 	private fuzzyFilterContexts(query: string): string[] {
-		return this.allContexts
-			.map(context => ({
-				text: context,
-				score: this.fuzzyScore(query, context.toLowerCase())
-			}))
-			.filter(item => item.score > 0)
-			.sort((a, b) => b.score - a.score)
-			.map(item => item.text);
-	}
-
-	private fuzzyScore(query: string, text: string): number {
-		if (text.includes(query)) {
-			return 100 + (50 - query.length);
-		}
-
-		let queryIndex = 0;
-		let score = 0;
-		
-		for (let i = 0; i < text.length && queryIndex < query.length; i++) {
-			if (text[i] === query[queryIndex]) {
-				queryIndex++;
-				score += 10;
-				
-				if (i === 0 || text[i - 1] === ' ') {
-					score += 5;
-				}
-			}
-		}
-
-		return queryIndex === query.length ? score : 0;
+		return FuzzySearch.filterStrings(this.allContexts, query);
 	}
 
 	private updateDisplay(): void {
@@ -226,12 +199,7 @@ export class ContextBrowserModal extends Modal {
 
 	private selectContext(hydratedContext: string): void {
 		// Convert back to sanitized format for searching
-		const sanitizedContext = hydratedContext
-			.toLowerCase()
-			.trim()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			|| 'context';
+		const sanitizedContext = ContextUtils.dehydrateContext(hydratedContext);
 
 		// Close this modal and open the note viewer
 		this.close();

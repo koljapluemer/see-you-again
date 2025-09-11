@@ -1,4 +1,5 @@
-import { ContextEntry, ActionType, ACTION_OPTIONS } from './types';
+import { ContextEntry, ActionType, ACTION_OPTIONS } from '../types';
+import { FuzzySearch } from '../utils/fuzzySearch';
 
 class FuzzyAutocomplete {
 	private container: HTMLElement;
@@ -69,40 +70,7 @@ class FuzzyAutocomplete {
 	}
 
 	private fuzzyFilter(query: string): string[] {
-		return this.suggestions
-			.map(suggestion => ({
-				text: suggestion,
-				score: this.fuzzyScore(query, suggestion.toLowerCase())
-			}))
-			.filter(item => item.score > 0)
-			.sort((a, b) => b.score - a.score)
-			.slice(0, 8) // Limit to 8 suggestions
-			.map(item => item.text);
-	}
-
-	private fuzzyScore(query: string, text: string): number {
-		if (text.includes(query)) {
-			// Exact substring match gets high score
-			return 100 + (50 - query.length);
-		}
-
-		// Fuzzy matching: check if all query characters appear in order
-		let queryIndex = 0;
-		let score = 0;
-		
-		for (let i = 0; i < text.length && queryIndex < query.length; i++) {
-			if (text[i] === query[queryIndex]) {
-				queryIndex++;
-				score += 10;
-				
-				// Bonus for word boundaries
-				if (i === 0 || text[i - 1] === ' ') {
-					score += 5;
-				}
-			}
-		}
-
-		return queryIndex === query.length ? score : 0;
+		return FuzzySearch.filterStrings(this.suggestions, query, 8);
 	}
 
 	private showDropdown(): void {
