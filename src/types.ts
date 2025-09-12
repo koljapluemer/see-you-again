@@ -8,7 +8,7 @@ export const DEFAULT_SETTINGS: SeeYouAgainSettings = {
 	currentModalNote: ''
 };
 
-export type ActionType = 'look-at' | 'memorize' | 'do' | 'iterate' | 'schedule' | 'improve';
+export type ActionType = 'look-at' | 'memorize' | 'do' | 'iterate' | 'schedule' | 'improve' | 'evaluate';
 
 export interface ContextEntry {
 	context: string;
@@ -25,5 +25,6 @@ export const ACTION_OPTIONS: { value: ActionType; label: string }[] = [
 	{ value: 'do', label: 'Do' },
 	{ value: 'iterate', label: 'Iterate' },
 	{ value: 'schedule', label: 'Schedule' },
-	{ value: 'improve', label: 'Improve' }
+	{ value: 'improve', label: 'Improve' },
+	{ value: 'evaluate', label: 'Evaluate'}
 ];
