@@ -5,6 +5,7 @@ import { BaseNoteModal } from '../utils/baseModal';
 import { ContextBrowserModal } from './contextBrowserModal';
 import { ActionHandler, ActionHandlerContext } from '../actions/baseActionHandler';
 import { ActionHandlerFactory } from '../actions/actionHandlerFactory';
+import { ActionTypeScheduler } from '../scheduling/actionTypeScheduler';
 
 export class ContextNoteViewerModal extends BaseNoteModal {
 	private noteService: NoteService;
@@ -33,6 +34,17 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			const file = this.app.vault.getAbstractFileByPath(resumeNotePath);
 			if (file instanceof TFile) {
 				this.currentNote = file;
+				
+				// Get the action type from frontmatter for resume case
+				const frontmatter = await this.noteService.getFrontmatter(file);
+				this.currentActionType = frontmatter[this.sanitizedContext];
+				
+				if (this.currentActionType) {
+					// Track the resumed action type
+					this.plugin.stateManager.incrementActionTypeUsage(this.currentActionType);
+					console.log(`[ContextNoteViewerModal] 🔄 Resumed note "${file.name}" with action type "${this.currentActionType}"`);
+				}
+				
 				await this.loadActionType();
 				await this.renderModal();
 				return;
@@ -53,12 +65,38 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 	private async loadRandomNote(): Promise<void> {
 		try {
-			this.currentNote = await this.noteService.getRandomNoteWithContext(this.sanitizedContext);
+			// Get the most underpicked action type based on current session usage
+			const actionTypeUsage = this.plugin.stateManager.getActionTypeUsage();
+			const preferredActionType = ActionTypeScheduler.getMostUnderpickedActionType(actionTypeUsage);
 			
-			if (!this.currentNote) {
+			console.log('[ContextNoteViewerModal] Loading note with scheduling info:', {
+				context: this.sanitizedContext,
+				preferredActionType,
+				currentUsage: actionTypeUsage
+			});
+			
+			// Log current usage summary
+			console.log('[ContextNoteViewerModal] Current session usage:\n' + 
+				ActionTypeScheduler.getUsageSummary(actionTypeUsage));
+
+			// Try to get a note with the preferred action type
+			const result = await this.noteService.getRandomNoteWithContextPrioritized(
+				this.sanitizedContext, 
+				preferredActionType
+			);
+			
+			if (!result) {
 				this.showNoNotesMessage();
 				return;
 			}
+
+			this.currentNote = result.file;
+			this.currentActionType = result.actionType;
+			
+			// Track that this action type was used
+			this.plugin.stateManager.incrementActionTypeUsage(result.actionType);
+			
+			console.log(`[ContextNoteViewerModal] ✅ Selected note "${result.file.name}" with action type "${result.actionType}"`);
 
 			await this.loadActionType();
 			await this.renderModal();
@@ -69,8 +107,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async loadActionType(): Promise<void> {
-		if (!this.currentNote) {
-			this.currentActionType = null;
+		if (!this.currentNote || !this.currentActionType) {
 			this.currentActionHandler = null;
 			return;
 		}
@@ -80,9 +117,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			if (this.currentActionHandler && this.currentActionHandler.cleanup) {
 				this.currentActionHandler.cleanup();
 			}
-
-			const frontmatter = await this.noteService.getFrontmatter(this.currentNote);
-			this.currentActionType = frontmatter[this.sanitizedContext] || null;
 			
 			// Create action handler context
 			const context: ActionHandlerContext = {
@@ -102,7 +136,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			this.currentActionHandler = await ActionHandlerFactory.createHandler(this.currentActionType, context);
 		} catch (error) {
 			console.error('Error loading action type:', error);
-			this.currentActionType = null;
 			this.currentActionHandler = null;
 		}
 	}

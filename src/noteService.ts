@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { SeeYouAgainFrontmatter } from './types';
+import { SeeYouAgainFrontmatter, ActionType } from './types';
 
 export class NoteService {
 	constructor(private app: App) {}
@@ -175,6 +175,89 @@ export class NoteService {
 
 		const randomIndex = Math.floor(Math.random() * notesWithContext.length);
 		return notesWithContext[randomIndex];
+	}
+
+	/**
+	 * Get notes with a specific context that have a particular action type
+	 */
+	async getNotesWithContextAndActionType(sanitizedContext: string, actionType: ActionType): Promise<TFile[]> {
+		const allFiles = this.getAllMarkdownFiles();
+		const matchingFiles: TFile[] = [];
+
+		for (const file of allFiles) {
+			try {
+				const fileCache = this.app.metadataCache.getFileCache(file);
+				const frontmatter = fileCache?.frontmatter;
+				
+				if (frontmatter && frontmatter['see-you-again']) {
+					const seeYouAgain = frontmatter['see-you-again'];
+					
+					// Handle object format (current implementation)
+					if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
+						// Check if this note has the context AND the specific action type
+						if (seeYouAgain[sanitizedContext] === actionType) {
+							matchingFiles.push(file);
+						}
+					}
+				}
+			} catch (error) {
+				console.error('Error checking context and action type in file:', file.path, error);
+			}
+		}
+
+		return matchingFiles;
+	}
+
+	/**
+	 * Get a random note with a specific context, prioritizing a specific action type
+	 * Falls back to any action type if none found for the preferred type
+	 */
+	async getRandomNoteWithContextPrioritized(
+		sanitizedContext: string, 
+		preferredActionType: ActionType | null
+	): Promise<{ file: TFile; actionType: ActionType } | null> {
+		console.log(`[NoteService] Looking for notes with context "${sanitizedContext}", preferred action type: ${preferredActionType || 'any'}`);
+
+		// First try to find notes with the preferred action type
+		if (preferredActionType) {
+			const preferredNotes = await this.getNotesWithContextAndActionType(sanitizedContext, preferredActionType);
+			
+			if (preferredNotes.length > 0) {
+				const randomIndex = Math.floor(Math.random() * preferredNotes.length);
+				const selectedFile = preferredNotes[randomIndex];
+				
+				console.log(`[NoteService] ✅ Found ${preferredNotes.length} notes with preferred action type "${preferredActionType}", selected: ${selectedFile.name}`);
+				
+				return {
+					file: selectedFile,
+					actionType: preferredActionType
+				};
+			} else {
+				console.log(`[NoteService] ❌ No notes found with preferred action type "${preferredActionType}"`);
+			}
+		}
+
+		// Fallback to any note with this context
+		const allNotesWithContext = await this.getNotesWithContext(sanitizedContext);
+		
+		if (allNotesWithContext.length === 0) {
+			console.log(`[NoteService] ❌ No notes found with context "${sanitizedContext}"`);
+			return null;
+		}
+
+		const randomIndex = Math.floor(Math.random() * allNotesWithContext.length);
+		const selectedFile = allNotesWithContext[randomIndex];
+		
+		// Get the action type for this file
+		const frontmatter = await this.getFrontmatter(selectedFile);
+		const actualActionType = frontmatter[sanitizedContext];
+		
+		console.log(`[NoteService] 📝 Fallback: Selected "${selectedFile.name}" with action type "${actualActionType}" (${allNotesWithContext.length} total options)`);
+		
+		return {
+			file: selectedFile,
+			actionType: actualActionType || 'look-at' // Default fallback
+		};
 	}
 
 	/**

@@ -1,3 +1,5 @@
+import { ActionType } from '../types';
+
 export interface PluginState {
   // Navigation state
   lastContextNote: string | null;
@@ -10,6 +12,9 @@ export interface PluginState {
   // Session state
   sessionStartTime: number;
   notesProcessedThisSession: number;
+  
+  // Action type tracking
+  actionTypeUsage: Record<ActionType, number>;
   
   // Cache state
   cachedContexts: string[] | null;
@@ -30,6 +35,15 @@ export class StateManager {
       isProcessingNote: false,
       sessionStartTime: Date.now(),
       notesProcessedThisSession: 0,
+      actionTypeUsage: {
+        'look-at': 0,
+        'do': 0,
+        'iterate': 0,
+        'schedule': 0,
+        'improve': 0,
+        'evaluate': 0,
+        'memorize': 0,
+      },
       cachedContexts: null,
       contextsCacheTimestamp: null,
       ...initialState
@@ -130,5 +144,29 @@ export class StateManager {
   
   incrementNotesProcessed(): void {
     this.set('notesProcessedThisSession', this.state.notesProcessedThisSession + 1);
+  }
+  
+  // Action type tracking methods
+  incrementActionTypeUsage(actionType: ActionType): void {
+    const currentUsage = { ...this.state.actionTypeUsage };
+    currentUsage[actionType] = (currentUsage[actionType] || 0) + 1;
+    this.set('actionTypeUsage', currentUsage);
+  }
+  
+  getActionTypeUsage(): Record<ActionType, number> {
+    return { ...this.state.actionTypeUsage };
+  }
+  
+  resetActionTypeUsage(): void {
+    const resetUsage: Record<ActionType, number> = {
+      'look-at': 0,
+      'do': 0,
+      'iterate': 0,
+      'schedule': 0,
+      'improve': 0,
+      'evaluate': 0,
+      'memorize': 0,
+    };
+    this.set('actionTypeUsage', resetUsage);
   }
 }
