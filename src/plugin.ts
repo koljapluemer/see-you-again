@@ -3,13 +3,12 @@ import { SeeYouAgainSettings, DEFAULT_SETTINGS } from './types';
 import { AddContextModal } from './modals/addContextModal';
 import { BatchAddContextModal } from './modals/batchAddContextModal';
 import { ContextBrowserModal } from './modals/contextBrowserModal';
+import { CurrentNoteContextModal } from './modals/currentNoteContextModal';
 import { SeeYouAgainSettingTab } from './settings';
-import { ToolbarManager } from './components/toolbarManager';
 import { StateManager } from './state/stateManager';
 
 export class SeeYouAgainPlugin extends Plugin {
 	settings: SeeYouAgainSettings;
-	toolbarManager: ToolbarManager;
 	stateManager: StateManager;
 
 	async onload(): Promise<void> {
@@ -45,18 +44,26 @@ export class SeeYouAgainPlugin extends Plugin {
 			}
 		});
 
+		// Add command to manage contexts for currently open note
+		this.addCommand({
+			id: 'manage-current-note-contexts',
+			name: 'Manage contexts for currently open note',
+			callback: () => {
+				new CurrentNoteContextModal(this.app, this).open();
+			}
+		});
+
+		// Add sidebar button for managing contexts
+		this.addRibbonIcon('tags', 'Manage contexts for current note', (evt: MouseEvent) => {
+			new CurrentNoteContextModal(this.app, this).open();
+		});
+
 		// Add settings tab
 		this.addSettingTab(new SeeYouAgainSettingTab(this.app, this));
-
-		// Initialize toolbar manager
-		this.toolbarManager = new ToolbarManager(this.app, this);
 	}
 
 	onunload(): void {
-		// Clean up toolbar manager
-		if (this.toolbarManager) {
-			this.toolbarManager.destroy();
-		}
+		// Plugin cleanup
 	}
 
 	async loadSettings(): Promise<void> {
