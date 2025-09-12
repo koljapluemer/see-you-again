@@ -66,8 +66,6 @@ export class ContextToolbar {
 		this.toolbarElement = document.createElement('div');
 		this.toolbarElement.className = 'see-you-again-toolbar';
 		
-		// Make sure the container has relative positioning
-		this.container.style.position = 'relative';
 		this.container.appendChild(this.toolbarElement);
 	}
 
