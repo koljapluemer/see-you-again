@@ -21,8 +21,6 @@ export class NoteRenderer {
 		// Render markdown using Obsidian's renderer - this handles images, wikilinks, etc.
 		this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
 		
-		// Add specific styling for better readability
-		this.styleRenderedContent(previewEl);
 	}
 
 	/**
@@ -48,56 +46,6 @@ export class NoteRenderer {
 		);
 	}
 
-
-	/**
-	 * Style rendered content for better readability
-	 */
-	static styleRenderedContent(container: HTMLElement): void {
-		// Add CSS classes to elements for styling
-		container.classList.add('note-renderer-content');
-		
-		// Style headings
-		const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
-		headings.forEach((heading) => {
-			heading.classList.add('note-renderer-heading');
-		});
-
-		// Style paragraphs
-		const paragraphs = container.querySelectorAll('p');
-		paragraphs.forEach((p) => {
-			p.classList.add('note-renderer-paragraph');
-		});
-
-		// Style lists
-		const lists = container.querySelectorAll('ul, ol');
-		lists.forEach((list) => {
-			list.classList.add('note-renderer-list');
-		});
-
-		// Style code blocks
-		const codeBlocks = container.querySelectorAll('pre');
-		codeBlocks.forEach((block) => {
-			block.classList.add('note-renderer-code-block');
-		});
-
-		// Style inline code
-		const inlineCode = container.querySelectorAll('code:not(pre code)');
-		inlineCode.forEach((code) => {
-			code.classList.add('note-renderer-inline-code');
-		});
-
-		// Style blockquotes
-		const blockquotes = container.querySelectorAll('blockquote');
-		blockquotes.forEach((quote) => {
-			quote.classList.add('note-renderer-blockquote');
-		});
-
-		// Style links
-		const links = container.querySelectorAll('a');
-		links.forEach((link) => {
-			link.classList.add('note-renderer-link');
-		});
-	}
 
 	/**
 	 * Remove YAML frontmatter from content

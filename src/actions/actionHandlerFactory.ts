@@ -1,10 +1,8 @@
 import { ActionType } from '../types';
 import { ActionHandler, ActionHandlerContext } from './baseActionHandler';
 import { LookAtActionHandler } from './lookAtActionHandler';
-import { DoActionHandler } from './doActionHandler';
 import { IterateActionHandler } from './iterateActionHandler';
 import { ScheduleActionHandler } from './scheduleActionHandler';
-import { ImproveActionHandler } from './improveActionHandler';
 import { EvaluateActionHandler } from './evaluateActionHandler';
 import { MemorizeActionHandler } from './memorizeActionHandler';
 
@@ -19,17 +17,11 @@ export class ActionHandlerFactory {
 			case 'look-at':
 				handler = new LookAtActionHandler(context);
 				break;
-			case 'do':
-				handler = new DoActionHandler(context);
-				break;
 			case 'iterate':
 				handler = new IterateActionHandler(context);
 				break;
 			case 'schedule':
 				handler = new ScheduleActionHandler(context);
-				break;
-			case 'improve':
-				handler = new ImproveActionHandler(context);
 				break;
 			case 'evaluate':
 				handler = new EvaluateActionHandler(context);

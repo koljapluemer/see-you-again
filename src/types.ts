@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: SeeYouAgainSettings = {
 	archiveFolder: 'Archive'
 };
 
-export type ActionType = 'look-at' | 'memorize' | 'do' | 'iterate' | 'schedule' | 'improve' | 'evaluate';
+export type ActionType = 'look-at' | 'memorize' | 'iterate' | 'schedule' | 'evaluate';
 
 export interface ContextEntry {
 	context: string;
@@ -33,9 +33,7 @@ export interface SeeYouAgainFrontmatter {
 export const ACTION_OPTIONS: { value: ActionType; label: string }[] = [
 	{ value: 'look-at', label: 'Look At' },
 	{ value: 'memorize', label: 'Memorize' },
-	{ value: 'do', label: 'Do' },
 	{ value: 'iterate', label: 'Iterate' },
 	{ value: 'schedule', label: 'Schedule' },
-	{ value: 'improve', label: 'Improve' },
 	{ value: 'evaluate', label: 'Evaluate'}
 ];

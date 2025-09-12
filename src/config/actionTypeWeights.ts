@@ -4,16 +4,14 @@ import { ActionType } from '../types';
  * Configurable weights for action types
  * Higher numbers = more frequent selection
  * 
- * Example: if 'look-at' = 3 and 'do' = 1, then 'look-at' should appear 3x as often as 'do'
+ * Example: if 'look-at' = 3 and 'iterate' = 2, then 'look-at' should appear 1.5x as often as 'iterate'
  * 
  * Edit these values to change the frequency of each action type:
  */
 export const ACTION_TYPE_WEIGHTS: Record<ActionType, number> = {
   'look-at': 3,
-  'do': 1,
   'iterate': 2,
   'schedule': 1,
-  'improve': 1,
   'evaluate': 2,
   'memorize': 3,
 };
@@ -58,7 +56,7 @@ export class ActionTypeWeightsConfig {
    * Validate that all action types have weights configured
    */
   static validateWeights(): { isValid: boolean; missingTypes: string[] } {
-    const allActionTypes: ActionType[] = ['look-at', 'do', 'iterate', 'schedule', 'improve', 'evaluate', 'memorize'];
+    const allActionTypes: ActionType[] = ['look-at', 'iterate', 'schedule', 'evaluate', 'memorize'];
     const configuredTypes = Object.keys(ACTION_TYPE_WEIGHTS) as ActionType[];
 
     const missingTypes = allActionTypes.filter(type => !configuredTypes.includes(type));

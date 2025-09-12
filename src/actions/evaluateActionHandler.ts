@@ -19,21 +19,9 @@ export class EvaluateActionHandler extends BaseActionHandler {
 		evaluationContainer.style.marginTop = '20px';
 
 		const label = evaluationContainer.createEl('label', { text: 'Your evaluation:' });
-		label.style.display = 'block';
-		label.style.marginBottom = '8px';
-		label.style.fontWeight = 'bold';
 
 		this.textArea = evaluationContainer.createEl('textarea');
 		this.textArea.placeholder = 'Write your evaluation here...';
-		this.textArea.style.width = '100%';
-		this.textArea.style.minHeight = '100px';
-		this.textArea.style.padding = '8px';
-		this.textArea.style.borderRadius = '4px';
-		this.textArea.style.border = '1px solid var(--background-modifier-border)';
-		this.textArea.style.backgroundColor = 'var(--background-primary)';
-		this.textArea.style.color = 'var(--text-normal)';
-		this.textArea.style.fontFamily = 'inherit';
-		this.textArea.style.resize = 'vertical';
 
 		this.textArea.addEventListener('input', (e) => {
 			this.evaluationText = (e.target as HTMLTextAreaElement).value;

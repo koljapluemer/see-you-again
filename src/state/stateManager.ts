@@ -37,10 +37,8 @@ export class StateManager {
       notesProcessedThisSession: 0,
       actionTypeUsage: {
         'look-at': 0,
-        'do': 0,
         'iterate': 0,
         'schedule': 0,
-        'improve': 0,
         'evaluate': 0,
         'memorize': 0,
       },
@@ -160,10 +158,8 @@ export class StateManager {
   resetActionTypeUsage(): void {
     const resetUsage: Record<ActionType, number> = {
       'look-at': 0,
-      'do': 0,
       'iterate': 0,
       'schedule': 0,
-      'improve': 0,
       'evaluate': 0,
       'memorize': 0,
     };
