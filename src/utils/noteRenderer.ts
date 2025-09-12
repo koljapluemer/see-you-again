@@ -1,4 +1,4 @@
-import { App, TFile, Plugin, MarkdownRenderer } from 'obsidian';
+import { App, TFile, Plugin, MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
 
 export class NoteRenderer {
 	/**
@@ -11,140 +11,43 @@ export class NoteRenderer {
 		app: App,
 		plugin: Plugin
 	): Promise<void> {
-		try {
-			// Remove frontmatter if present
-			const contentWithoutFrontmatter = this.removeFrontmatter(content);
-			const previewContent = contentWithoutFrontmatter.trim();
+		// Remove frontmatter if present
+		const contentWithoutFrontmatter = this.removeFrontmatter(content);
+		const previewContent = contentWithoutFrontmatter.trim();
 
-			// Use Obsidian's markdown renderer
-			const previewEl = container.createEl('div', { cls: 'note-preview-content' });
-			
-			// Render markdown using Obsidian's renderer
-			await this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
-			
-			// Add specific styling for better readability
-			this.styleRenderedContent(previewEl);
-
-		} catch (error) {
-			console.error('Error rendering note content:', error);
-			// Fallback to plain text
-			const fallbackEl = container.createEl('div', { cls: 'note-preview-fallback' });
-			const plainContent = this.removeFrontmatter(content).trim();
-			fallbackEl.textContent = plainContent || 'Empty note';
-		}
+		// Use Obsidian's markdown renderer
+		const previewEl = container.createEl('div', { cls: 'note-preview-content' });
+		
+		// Render markdown using Obsidian's renderer - this handles images, wikilinks, etc.
+		this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
+		
+		// Add specific styling for better readability
+		this.styleRenderedContent(previewEl);
 	}
 
 	/**
-	 * Render markdown content using Obsidian's renderer with fallback
+	 * Render markdown content using Obsidian's renderer with proper MarkdownRenderChild
 	 */
-	static async renderMarkdown(
+	static renderMarkdown(
 		content: string, 
 		container: HTMLElement, 
 		currentNote: TFile | null,
 		app: App,
 		plugin: Plugin
-	): Promise<void> {
-		try {
-			// Use Obsidian's MarkdownRenderer
-			await MarkdownRenderer.renderMarkdown(
-				content,
-				container,
-				currentNote?.path || '',
-				plugin
-			);
-		} catch (error) {
-			console.error('Error with markdown renderer:', error);
-			// Fallback to basic markdown rendering
-			this.renderBasicMarkdown(content, container);
-		}
-	}
-
-	/**
-	 * Basic markdown rendering fallback
-	 */
-	static renderBasicMarkdown(content: string, container: HTMLElement): void {
-		const lines = content.split('\n');
-		let inCodeBlock = false;
-		let currentParagraph = '';
-
-		for (const line of lines) {
-			if (line.startsWith('```')) {
-				if (currentParagraph) {
-					this.addParagraph(container, currentParagraph);
-					currentParagraph = '';
-				}
-				inCodeBlock = !inCodeBlock;
-				if (inCodeBlock) {
-					container.createEl('pre', { text: '', cls: 'code-block' });
-				}
-				continue;
-			}
-
-			if (inCodeBlock) {
-				const lastPre = container.querySelector('pre:last-child');
-				if (lastPre) {
-					lastPre.textContent += line + '\n';
-				}
-				continue;
-			}
-
-			if (line.trim() === '') {
-				if (currentParagraph) {
-					this.addParagraph(container, currentParagraph);
-					currentParagraph = '';
-				}
-				continue;
-			}
-
-			if (line.startsWith('#')) {
-				if (currentParagraph) {
-					this.addParagraph(container, currentParagraph);
-					currentParagraph = '';
-				}
-				const level = Math.min(line.match(/^#+/)?.[0].length || 1, 6);
-				const text = line.replace(/^#+\s*/, '');
-				const headingTag = `h${level}` as keyof HTMLElementTagNameMap;
-				container.createEl(headingTag, { text });
-				continue;
-			}
-
-			if (line.startsWith('- ') || line.startsWith('* ')) {
-				if (currentParagraph) {
-					this.addParagraph(container, currentParagraph);
-					currentParagraph = '';
-				}
-				const listItem = container.createEl('li', { text: line.substring(2) });
-				continue;
-			}
-
-			currentParagraph += (currentParagraph ? ' ' : '') + line;
-		}
-
-		if (currentParagraph) {
-			this.addParagraph(container, currentParagraph);
-		}
-	}
-
-	/**
-	 * Add a paragraph with basic inline formatting
-	 */
-	private static addParagraph(container: HTMLElement, text: string): void {
-		const p = container.createEl('p');
-		// Handle basic inline formatting
-		const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/);
+	): void {
+		// Create a MarkdownRenderChild for proper rendering and component lifecycle
+		const renderChild = new MarkdownRenderChild(container);
 		
-		for (const part of parts) {
-			if (part.startsWith('**') && part.endsWith('**')) {
-				p.createEl('strong', { text: part.slice(2, -2) });
-			} else if (part.startsWith('*') && part.endsWith('*')) {
-				p.createEl('em', { text: part.slice(1, -1) });
-			} else if (part.startsWith('`') && part.endsWith('`')) {
-				p.createEl('code', { text: part.slice(1, -1) });
-			} else {
-				p.appendText(part);
-			}
-		}
+		// Use the current MarkdownRenderer.render() API (not deprecated renderMarkdown)
+		MarkdownRenderer.render(
+			app,
+			content,
+			container,
+			currentNote?.path || '',
+			renderChild
+		);
 	}
+
 
 	/**
 	 * Style rendered content for better readability
