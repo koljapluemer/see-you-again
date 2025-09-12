@@ -40,17 +40,7 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 	async renderNoteContent(container: HTMLElement): Promise<void> {
 		try {
-			// Only show the heading initially
-			if (this.noteHeading) {
-				const headingEl = container.createEl('div');
-				headingEl.innerHTML = this.noteHeading;
-				headingEl.className = 'memorize-heading';
-				headingEl.style.fontWeight = 'bold';
-				headingEl.style.fontSize = '1.2em';
-				headingEl.style.marginBottom = '16px';
-			}
-
-			// Create reveal button
+			// Just show the reveal button - the heading is already shown in the modal header
 			const revealButton = this.context.createStyledButton('Reveal', () => {
 				this.revealNoteBody(container);
 			});
