@@ -1,5 +1,6 @@
 import { App, TFile } from 'obsidian';
 import { SeeYouAgainFrontmatter, ActionType } from './types';
+import { DateUtils } from './utils/dateUtils';
 
 export class NoteService {
 	constructor(private app: App) {}
@@ -134,11 +135,12 @@ export class NoteService {
 	}
 
 	/**
-	 * Get all notes that have a specific context (sanitized key)
+	 * Get all notes that have a specific context (sanitized key), prioritizing unseen notes
 	 */
 	async getNotesWithContext(sanitizedContext: string): Promise<TFile[]> {
 		const allFiles = this.getAllMarkdownFiles();
-		const matchingFiles: TFile[] = [];
+		const unseenNotes: TFile[] = [];
+		const seenNotes: TFile[] = [];
 
 		for (const file of allFiles) {
 			try {
@@ -151,7 +153,13 @@ export class NoteService {
 					// Handle object format (current implementation)
 					if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
 						if (seeYouAgain[sanitizedContext]) {
-							matchingFiles.push(file);
+							// Check if note was seen today
+							const lastSeen = frontmatter['seen-you-again'];
+							if (this.wasSeenToday(lastSeen)) {
+								seenNotes.push(file);
+							} else {
+								unseenNotes.push(file);
+							}
 						}
 					}
 				}
@@ -160,7 +168,8 @@ export class NoteService {
 			}
 		}
 
-		return matchingFiles;
+		// Return unseen notes first, then seen notes
+		return [...unseenNotes, ...seenNotes];
 	}
 
 	/**
@@ -281,6 +290,30 @@ export class NoteService {
 		} catch (error) {
 			console.error('Error getting frontmatter for file:', file.path, error);
 			return {};
+		}
+	}
+
+	/**
+	 * Check if a note was seen today (using human-day logic with 4am cutoff)
+	 */
+	private wasSeenToday(lastSeenDate: string | undefined): boolean {
+		if (!lastSeenDate) return false;
+		if (!DateUtils.isValidDateString(lastSeenDate)) return false;
+		return DateUtils.isToday(lastSeenDate);
+	}
+
+	/**
+	 * Mark a note as seen today
+	 */
+	async markNoteSeen(file: TFile): Promise<void> {
+		try {
+			const currentHumanDay = DateUtils.getCurrentHumanDay();
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				frontmatter['seen-you-again'] = currentHumanDay;
+			});
+		} catch (error) {
+			console.error('Error marking note as seen:', file.path, error);
+			throw error;
 		}
 	}
 }

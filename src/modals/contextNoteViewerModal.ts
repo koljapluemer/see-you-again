@@ -171,6 +171,13 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		const { contentEl } = this;
 		contentEl.empty();
 
+		// Mark the note as seen when displayed
+		try {
+			await this.noteService.markNoteSeen(this.currentNote);
+		} catch (error) {
+			console.error('Failed to mark note as seen:', error);
+		}
+
 		// Action-specific prompt at the very top
 		const promptText = this.currentActionHandler.getPromptText();
 		const promptLabel = contentEl.createEl('div');
