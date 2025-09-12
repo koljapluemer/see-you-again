@@ -3,6 +3,7 @@ import { NoteService } from '../noteService';
 import { SeeYouAgainSettings } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { NoteRenderer } from '../utils/noteRenderer';
+import { ContextBrowserModal } from './contextBrowserModal';
 
 export class ContextNoteViewerModal extends BaseNoteModal {
 	private noteService: NoteService;
@@ -118,19 +119,32 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			previewContainer.style.color = 'var(--text-error)';
 		}
 
-		// Button row with Next and Jump to Note buttons
+		// Button row with Change Context, Jump to Note, Next buttons
 		const buttonContainer = contentEl.createEl('div');
 		buttonContainer.className = 'modal-button-row';
 		
-		const nextButton = this.createStyledButton('Next', () => this.handleNext());
+		const changeContextButton = this.createStyledButton('Change Context', () => this.changeContext());
 		const jumpButton = this.createStyledButton('Jump to Note', () => this.jumpToNote());
+		const nextButton = this.createStyledButton('Next', () => this.handleNext());
 		
-		buttonContainer.appendChild(nextButton);
+		buttonContainer.appendChild(changeContextButton);
 		buttonContainer.appendChild(jumpButton);
+		buttonContainer.appendChild(nextButton);
 	}
 
 	private async handleNext(): Promise<void> {
 		await this.loadRandomNote();
+	}
+
+	private changeContext(): void {
+		// Clear stored state since user wants to change context
+		(this.plugin as any).lastContextNote = null;
+		(this.plugin as any).lastContext = null;
+		
+		// Close this modal and open the context browser
+		this.close();
+		const contextBrowserModal = new ContextBrowserModal(this.app, this.plugin);
+		contextBrowserModal.open();
 	}
 
 	private async jumpToNote(): Promise<void> {
