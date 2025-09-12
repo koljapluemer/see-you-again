@@ -1,15 +1,15 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-see-you-again",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Context-based spaced repetition system for notes. Browse notes by context, add contextual metadata, and revisit them systematically.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": ["obsidian", "plugin", "spaced-repetition", "context", "notes", "review"],
+	"author": "Kolj Sam",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
