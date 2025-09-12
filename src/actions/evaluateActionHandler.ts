@@ -1,3 +1,4 @@
+import { ButtonComponent } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
 
 export class EvaluateActionHandler extends BaseActionHandler {
@@ -40,22 +41,16 @@ export class EvaluateActionHandler extends BaseActionHandler {
 	}
 
 	createButtons(buttonContainer: HTMLElement): void {
-		const changeContextButton = this.context.createStyledButton('Change Context', this.context.onChangeContext);
-		const jumpButton = this.context.createStyledButton('Jump to Note', this.context.onJumpToNote);
-		const doneButton = this.context.createStyledButton('Done', async () => {
+		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
+		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
+		this.context.createButton(buttonContainer, 'Save and Next', async () => {
 			await this.handleDone();
 		});
-		const nextButton = this.context.createStyledButton('Next', this.context.onNext);
-
-		buttonContainer.appendChild(changeContextButton);
-		buttonContainer.appendChild(jumpButton);
-		buttonContainer.appendChild(doneButton);
-		buttonContainer.appendChild(nextButton);
 	}
 
 	private async handleDone(): Promise<void> {
 		if (!this.evaluationText.trim()) {
-			this.context.showError('Please enter an evaluation before clicking Done.');
+			this.context.showError('Please enter an evaluation before clicking Save and Next.');
 			return;
 		}
 
@@ -63,8 +58,14 @@ export class EvaluateActionHandler extends BaseActionHandler {
 			// Read the current note content
 			const currentContent = await this.context.app.vault.read(this.context.currentNote);
 			
-			// Add the evaluation as a bullet point at the end
-			const evaluationBullet = `- ${this.evaluationText.trim()}`;
+			// Get current date in yyyy-mm-dd format
+			const today = new Date();
+			const dateStr = today.getFullYear() + '-' + 
+				String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+				String(today.getDate()).padStart(2, '0');
+			
+			// Add the evaluation as a bullet point with date
+			const evaluationBullet = `- ${dateStr} ${this.evaluationText.trim()}`;
 			const newContent = currentContent + '\n\n' + evaluationBullet;
 			
 			// Write back to the note

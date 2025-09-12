@@ -1,4 +1,4 @@
-import { App, TFile, Notice } from 'obsidian';
+import { App, TFile, Notice, ButtonComponent } from 'obsidian';
 import { NoteService } from '../noteService';
 import { SeeYouAgainPlugin, ActionType } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
@@ -128,7 +128,12 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 				onNext: () => this.handleNext(),
 				onChangeContext: () => this.changeContext(),
 				onJumpToNote: () => this.jumpToNote(),
-				createStyledButton: (text: string, onClick: () => void | Promise<void>) => this.createStyledButton(text, onClick),
+				createButton: (container: HTMLElement, text: string, onClick: () => void | Promise<void>) => {
+					const button = new ButtonComponent(container);
+					button.setButtonText(text);
+					button.onClick(onClick);
+					return button.buttonEl;
+				},
 				showError: (message: string) => this.showError(message)
 			};
 

@@ -1,3 +1,4 @@
+import { ButtonComponent } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
 
 export class ImproveActionHandler extends BaseActionHandler {
@@ -15,27 +16,24 @@ export class ImproveActionHandler extends BaseActionHandler {
 	}
 
 	createButtons(buttonContainer: HTMLElement): void {
-		const changeContextButton = this.context.createStyledButton('Change Context', this.context.onChangeContext);
-		const jumpButton = this.context.createStyledButton('Jump to Note', async () => {
+		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
+		
+		this.context.createButton(buttonContainer, 'Jump to Note', async () => {
 			await this.context.onJumpToNote();
 			// After jumping, we need to track if the note gets modified
 			this.startTrackingModifications();
 		});
-		const doneButton = this.context.createStyledButton('Done', async () => {
+		
+		const doneButton = new ButtonComponent(buttonContainer);
+		doneButton.setButtonText('Done');
+		doneButton.setDisabled(true); // Initially disabled
+		doneButton.onClick(async () => {
 			if (this.isNoteModified) {
 				await this.context.onNext();
 			}
 		});
-		const nextButton = this.context.createStyledButton('Next', this.context.onNext);
 
-		// Initially disable the Done button
-		doneButton.addClass('button-disabled');
-		doneButton.setAttribute('disabled', 'true');
-
-		buttonContainer.appendChild(changeContextButton);
-		buttonContainer.appendChild(jumpButton);
-		buttonContainer.appendChild(doneButton);
-		buttonContainer.appendChild(nextButton);
+		this.context.createButton(buttonContainer, 'Next', this.context.onNext);
 
 		// Store reference to done button for later enabling
 		(this as any).doneButton = doneButton;
@@ -57,10 +55,9 @@ export class ImproveActionHandler extends BaseActionHandler {
 	}
 
 	private enableDoneButton(): void {
-		const doneButton = (this as any).doneButton;
+		const doneButton = (this as any).doneButton as ButtonComponent;
 		if (doneButton) {
-			doneButton.removeClass('button-disabled');
-			doneButton.removeAttribute('disabled');
+			doneButton.setDisabled(false);
 		}
 	}
 

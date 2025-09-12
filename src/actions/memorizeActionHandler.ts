@@ -1,3 +1,4 @@
+import { ButtonComponent } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
 
 export class MemorizeActionHandler extends BaseActionHandler {
@@ -41,14 +42,13 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	async renderNoteContent(container: HTMLElement): Promise<void> {
 		try {
 			// Just show the reveal button - the heading is already shown in the modal header
-			const revealButton = this.context.createStyledButton('Reveal', () => {
+			const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
 				this.revealNoteBody(container);
 			});
-			revealButton.style.marginBottom = '16px';
-			container.appendChild(revealButton);
+			revealButtonEl.style.marginBottom = '16px';
 
 			// Store reference for later use
-			(this as any).revealButton = revealButton;
+			(this as any).revealButton = revealButtonEl;
 			(this as any).contentContainer = container;
 
 		} catch (error) {
@@ -102,46 +102,29 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		srButtonContainer.style.marginTop = '16px';
 		srButtonContainer.style.justifyContent = 'center';
 
-		// Create the four spaced repetition buttons
-		const wrongButton = this.context.createStyledButton('Wrong', async () => {
+		// Create the four spaced repetition buttons with standard Obsidian styling
+		this.context.createButton(srButtonContainer, 'Wrong', async () => {
 			await this.context.onNext();
 		});
-		wrongButton.style.backgroundColor = 'var(--color-red)';
-		wrongButton.style.color = 'white';
 
-		const hardButton = this.context.createStyledButton('Hard', async () => {
+		this.context.createButton(srButtonContainer, 'Hard', async () => {
 			await this.context.onNext();
 		});
-		hardButton.style.backgroundColor = 'var(--color-orange)';
-		hardButton.style.color = 'white';
 
-		const correctButton = this.context.createStyledButton('Correct', async () => {
+		this.context.createButton(srButtonContainer, 'Correct', async () => {
 			await this.context.onNext();
 		});
-		correctButton.style.backgroundColor = 'var(--color-green)';
-		correctButton.style.color = 'white';
 
-		const easyButton = this.context.createStyledButton('Easy', async () => {
+		this.context.createButton(srButtonContainer, 'Easy', async () => {
 			await this.context.onNext();
 		});
-		easyButton.style.backgroundColor = 'var(--color-blue)';
-		easyButton.style.color = 'white';
-
-		srButtonContainer.appendChild(wrongButton);
-		srButtonContainer.appendChild(hardButton);
-		srButtonContainer.appendChild(correctButton);
-		srButtonContainer.appendChild(easyButton);
 	}
 
 	createButtons(buttonContainer: HTMLElement): void {
 		// For memorize action, NO Done button - only the standard navigation buttons
-		const changeContextButton = this.context.createStyledButton('Change Context', this.context.onChangeContext);
-		const jumpButton = this.context.createStyledButton('Jump to Note', this.context.onJumpToNote);
-		const nextButton = this.context.createStyledButton('Next', this.context.onNext);
-		
-		buttonContainer.appendChild(changeContextButton);
-		buttonContainer.appendChild(jumpButton);
-		buttonContainer.appendChild(nextButton);
+		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
+		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
+		this.context.createButton(buttonContainer, 'Next', this.context.onNext);
 	}
 
 	cleanup(): void {

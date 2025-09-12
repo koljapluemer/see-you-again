@@ -10,7 +10,7 @@ export interface ActionHandlerContext {
 	onNext: () => Promise<void>;
 	onChangeContext: () => void;
 	onJumpToNote: () => Promise<void>;
-	createStyledButton: (text: string, onClick: () => void | Promise<void>) => HTMLElement;
+	createButton: (container: HTMLElement, text: string, onClick: () => void | Promise<void>) => HTMLElement;
 	showError: (message: string) => void;
 }
 
@@ -62,13 +62,9 @@ export abstract class BaseActionHandler implements ActionHandler {
 	}
 
 	protected createStandardButtons(buttonContainer: HTMLElement): void {
-		const changeContextButton = this.context.createStyledButton('Change Context', this.context.onChangeContext);
-		const jumpButton = this.context.createStyledButton('Jump to Note', this.context.onJumpToNote);
-		const nextButton = this.context.createStyledButton('Next', this.context.onNext);
-		
-		buttonContainer.appendChild(changeContextButton);
-		buttonContainer.appendChild(jumpButton);
-		buttonContainer.appendChild(nextButton);
+		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
+		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
+		this.context.createButton(buttonContainer, 'Next', this.context.onNext);
 	}
 
 	cleanup(): void {
