@@ -127,7 +127,7 @@ export class AddContextModal extends BaseNoteModal {
 		fieldsContainer.className = 'modal-fields-container';
 
 		// Initialize field manager
-		this.contextFieldManager = new ContextFieldManager(fieldsContainer, (entries) => {
+		this.contextFieldManager = new ContextFieldManager(this.app, fieldsContainer, (entries: ContextEntry[]) => {
 			this.buttonManager?.updateButtonStates();
 		});
 

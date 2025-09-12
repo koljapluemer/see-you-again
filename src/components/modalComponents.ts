@@ -1,164 +1,18 @@
+import { TextComponent, DropdownComponent, Setting, App } from 'obsidian';
 import { ContextEntry, ActionType, ACTION_OPTIONS } from '../types';
-import { FuzzySearch } from '../utils/fuzzySearch';
+import { ContextInputSuggest } from './contextSuggest';
 
-class FuzzyAutocomplete {
-	private container: HTMLElement;
-	private input: HTMLInputElement;
-	private dropdown: HTMLElement;
-	private suggestions: string[] = [];
-	private filteredSuggestions: string[] = [];
-	private selectedIndex: number = -1;
-	private onSelect: (value: string) => void;
-
-	constructor(input: HTMLInputElement, suggestions: string[], onSelect: (value: string) => void, container?: HTMLElement) {
-		this.input = input;
-		this.suggestions = suggestions;
-		this.onSelect = onSelect;
-		this.container = container || input.parentElement!;
-		this.createDropdown();
-		this.bindEvents();
-	}
-
-	private createDropdown(): void {
-		this.dropdown = document.createElement('div');
-		this.dropdown.className = 'modal-autocomplete-dropdown';
-		
-		// Ensure parent has relative positioning
-		this.container.style.position = 'relative';
-		this.container.appendChild(this.dropdown);
-	}
-
-	private bindEvents(): void {
-		this.input.addEventListener('input', () => this.handleInput());
-		this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
-		this.input.addEventListener('blur', () => {
-			// Delay hiding to allow click events
-			setTimeout(() => this.hideDropdown(), 150);
-		});
-		this.input.addEventListener('focus', () => this.handleInput());
-	}
-
-	private handleInput(): void {
-		const query = this.input.value.toLowerCase().trim();
-		
-		if (query.length === 0) {
-			this.hideDropdown();
-			return;
-		}
-
-		this.filteredSuggestions = this.fuzzyFilter(query);
-		this.selectedIndex = -1;
-		
-		if (this.filteredSuggestions.length > 0) {
-			this.showDropdown();
-		} else {
-			this.hideDropdown();
-		}
-	}
-
-	private fuzzyFilter(query: string): string[] {
-		return FuzzySearch.filterStrings(this.suggestions, query, 8);
-	}
-
-	private showDropdown(): void {
-		this.dropdown.innerHTML = '';
-		this.dropdown.style.display = 'block';
-
-		this.filteredSuggestions.forEach((suggestion, index) => {
-			const item = document.createElement('div');
-			item.textContent = suggestion;
-			item.className = 'modal-autocomplete-item';
-
-			item.addEventListener('mouseenter', () => {
-				this.selectedIndex = index;
-				this.updateSelection();
-			});
-
-			item.addEventListener('click', () => {
-				this.selectItem(suggestion);
-			});
-
-			this.dropdown.appendChild(item);
-		});
-
-		this.updateSelection();
-	}
-
-	private hideDropdown(): void {
-		this.dropdown.style.display = 'none';
-		this.selectedIndex = -1;
-	}
-
-	private handleKeydown(e: KeyboardEvent): void {
-		if (this.dropdown.style.display === 'none') return;
-
-		switch (e.key) {
-			case 'ArrowDown':
-				e.preventDefault();
-				this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredSuggestions.length - 1);
-				this.updateSelection();
-				break;
-			case 'ArrowUp':
-				e.preventDefault();
-				this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
-				this.updateSelection();
-				break;
-			case 'Enter':
-				e.preventDefault();
-				if (this.selectedIndex >= 0) {
-					this.selectItem(this.filteredSuggestions[this.selectedIndex]);
-				}
-				break;
-			case 'Escape':
-				e.preventDefault();
-				this.hideDropdown();
-				break;
-		}
-	}
-
-	private updateSelection(): void {
-		const items = this.dropdown.children;
-		Array.from(items).forEach((item, index) => {
-			const element = item as HTMLElement;
-			if (index === this.selectedIndex) {
-				element.style.backgroundColor = 'var(--background-modifier-hover)';
-			} else {
-				element.style.backgroundColor = 'transparent';
-			}
-		});
-	}
-
-	private selectItem(value: string): void {
-		this.input.value = value;
-		this.hideDropdown();
-		this.onSelect(value);
-		
-		// Trigger input event to update the form
-		this.input.dispatchEvent(new Event('input', { bubbles: true }));
-	}
-
-	updateSuggestions(newSuggestions: string[]): void {
-		this.suggestions = newSuggestions;
-		if (this.dropdown.style.display === 'block') {
-			this.handleInput(); // Refresh dropdown if open
-		}
-	}
-
-	destroy(): void {
-		if (this.dropdown.parentElement) {
-			this.dropdown.parentElement.removeChild(this.dropdown);
-		}
-	}
-}
 
 export class ContextFieldManager {
 	private container: HTMLElement;
 	private entries: ContextEntry[] = [];
 	private onChangeCallback: (entries: ContextEntry[]) => void;
-	private autocompleteInstances: FuzzyAutocomplete[] = [];
+	private suggestInstances: ContextInputSuggest[] = [];
 	private pastContexts: string[] = [];
+	private app: App;
 
-	constructor(container: HTMLElement, onChange: (entries: ContextEntry[]) => void) {
+	constructor(app: App, container: HTMLElement, onChange: (entries: ContextEntry[]) => void) {
+		this.app = app;
 		this.container = container;
 		this.onChangeCallback = onChange;
 		this.initializeFields();
@@ -174,62 +28,52 @@ export class ContextFieldManager {
 	}
 
 	private createFieldRow(entry: ContextEntry, index: number): HTMLElement {
-		const row = document.createElement('div');
-		row.classList.add('context-field-row');
-		row.style.position = 'relative'; // For autocomplete positioning
-
-		// Context input field (no wrapper container)
-		const contextInput = document.createElement('input');
-		contextInput.type = 'text';
-		contextInput.placeholder = `Context ${index + 1}`;
-		contextInput.value = entry.context;
-		contextInput.className = 'modal-context-input';
+		const rowContainer = document.createElement('div');
 		
-		contextInput.addEventListener('input', (e) => {
-			const target = e.target as HTMLInputElement;
-			this.entries[index].context = target.value;
-			this.onChangeCallback(this.entries);
-			
-			// Add new field if this is the last field and user started typing
-			if (index === this.entries.length - 1 && target.value.length > 0) {
-				this.addNewField();
-			}
-		});
+		let textComponent: TextComponent;
+		let dropdownComponent: DropdownComponent;
 
-		// Action dropdown
-		const actionSelect = document.createElement('select');
-		actionSelect.className = 'modal-action-select';
-		
-		ACTION_OPTIONS.forEach(option => {
-			const optionEl = document.createElement('option');
-			optionEl.value = option.value;
-			optionEl.textContent = option.label;
-			optionEl.selected = option.value === entry.action;
-			actionSelect.appendChild(optionEl);
-		});
+		const setting = new Setting(rowContainer)
+			.addText((text) => {
+				textComponent = text;
+				text.setPlaceholder(`Context ${index + 1}`);
+				text.setValue(entry.context);
+				text.onChange((value) => {
+					this.entries[index].context = value;
+					this.onChangeCallback(this.entries);
+					
+					// Add new field if this is the last field and user started typing
+					if (index === this.entries.length - 1 && value.length > 0) {
+						this.addNewField();
+					}
+				});
+			})
+			.addDropdown((dropdown) => {
+				dropdownComponent = dropdown;
+				ACTION_OPTIONS.forEach(option => {
+					dropdown.addOption(option.value, option.label);
+				});
+				dropdown.setValue(entry.action);
+				dropdown.onChange((value: string) => {
+					this.entries[index].action = value as ActionType;
+					this.onChangeCallback(this.entries);
+				});
+			});
 
-		actionSelect.addEventListener('change', (e) => {
-			const target = e.target as HTMLSelectElement;
-			this.entries[index].action = target.value as ActionType;
-			this.onChangeCallback(this.entries);
-		});
-
-		row.appendChild(contextInput);
-		row.appendChild(actionSelect);
-
-		// Create autocomplete for this input - attach to row, not input
-		const autocomplete = new FuzzyAutocomplete(
-			contextInput, 
+		// Create native suggestions for the text input after textComponent is assigned
+		const suggestions = new ContextInputSuggest(
+			this.app,
+			textComponent!.inputEl, 
 			this.pastContexts, 
 			(selectedValue) => {
 				this.entries[index].context = selectedValue;
+				textComponent!.setValue(selectedValue);
 				this.onChangeCallback(this.entries);
-			},
-			row // Pass row as container
+			}
 		);
-		this.autocompleteInstances[index] = autocomplete;
+		this.suggestInstances[index] = suggestions;
 
-		return row;
+		return rowContainer;
 	}
 
 	private addNewField(): void {
@@ -238,9 +82,9 @@ export class ContextFieldManager {
 	}
 
 	private render(): void {
-		// Clean up existing autocomplete instances
-		this.autocompleteInstances.forEach(instance => instance?.destroy());
-		this.autocompleteInstances = [];
+		// Clean up existing suggest instances
+		this.suggestInstances.forEach(instance => instance?.destroy());
+		this.suggestInstances = [];
 		
 		this.container.innerHTML = '';
 		
@@ -260,8 +104,8 @@ export class ContextFieldManager {
 
 	setPastContexts(contexts: string[]): void {
 		this.pastContexts = contexts;
-		// Update all existing autocomplete instances
-		this.autocompleteInstances.forEach(instance => {
+		// Update all existing suggest instances
+		this.suggestInstances.forEach(instance => {
 			if (instance) {
 				instance.updateSuggestions(contexts);
 			}
@@ -277,8 +121,8 @@ export class ContextFieldManager {
 	}
 
 	destroy(): void {
-		this.autocompleteInstances.forEach(instance => instance?.destroy());
-		this.autocompleteInstances = [];
+		this.suggestInstances.forEach(instance => instance?.destroy());
+		this.suggestInstances = [];
 	}
 }
 

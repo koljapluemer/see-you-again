@@ -1,4 +1,4 @@
-import { App, Modal, TFile, Notice, Plugin } from 'obsidian';
+import { App, Modal, TFile, Notice, Plugin, ButtonComponent } from 'obsidian';
 import { SeeYouAgainSettings } from '../types';
 
 export abstract class BaseNoteModal extends Modal {
@@ -69,17 +69,18 @@ export abstract class BaseNoteModal extends Modal {
 		onClick: () => void, 
 		variant: 'primary' | 'secondary' | 'accent' = 'secondary'
 	): HTMLButtonElement {
-		const button = document.createElement('button');
-		button.textContent = text;
+		const buttonContainer = document.createElement('div');
+		const buttonComponent = new ButtonComponent(buttonContainer);
 		
-		// Use Obsidian's built-in button classes
+		buttonComponent.setButtonText(text);
+		buttonComponent.onClick(onClick);
+		
+		// Use Obsidian's built-in button styling
 		if (variant === 'primary') {
-			button.className = 'mod-cta';
+			buttonComponent.setCta();
 		}
-		// For secondary and accent, use default button styling (no extra classes needed)
-
-		button.addEventListener('click', onClick);
-		return button;
+		
+		return buttonComponent.buttonEl;
 	}
 
 	/**

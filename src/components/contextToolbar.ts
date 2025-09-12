@@ -1,8 +1,8 @@
-import { App, TFile, Notice, Plugin, MarkdownView } from 'obsidian';
+import { App, TFile, Notice, Plugin, MarkdownView, TextComponent, DropdownComponent, ButtonComponent } from 'obsidian';
 import { NoteService } from '../noteService';
 import { SeeYouAgainSettings, ContextEntry, ActionType, ACTION_OPTIONS } from '../types';
 import { ContextUtils } from '../utils/contextUtils';
-import { FuzzySearch } from '../utils/fuzzySearch';
+import { ContextInputSuggest } from './contextSuggest';
 
 export class ContextToolbar {
 	private app: App;
@@ -15,6 +15,7 @@ export class ContextToolbar {
 	private isQuickAddMode: boolean = false;
 	private existingContexts: { [key: string]: ActionType } = {};
 	private pastContexts: string[] = [];
+	private contextSuggest: ContextInputSuggest | null = null;
 
 	constructor(
 		app: App,
@@ -71,6 +72,12 @@ export class ContextToolbar {
 	}
 
 	private render(): void {
+		// Clean up existing suggestion instance
+		if (this.contextSuggest) {
+			this.contextSuggest.destroy();
+			this.contextSuggest = null;
+		}
+		
 		this.toolbarElement.innerHTML = '';
 		
 		if (!this.isExpanded) {
@@ -98,14 +105,14 @@ export class ContextToolbar {
 		expandButton.className = 'expand-button';
 		expandButton.addEventListener('click', () => this.toggleExpanded());
 
-		// Quick add button
-		const addButton = document.createElement('button');
-		addButton.textContent = '+ Add Context';
-		addButton.className = 'add-button';
-		addButton.addEventListener('click', () => this.toggleQuickAdd());
+		// Quick add button using ButtonComponent
+		const addButtonContainer = document.createElement('div');
+		const addButtonComponent = new ButtonComponent(addButtonContainer);
+		addButtonComponent.setButtonText('+ Add Context');
+		addButtonComponent.onClick(() => this.toggleQuickAdd());
 
 		collapsedContent.appendChild(leftSection);
-		collapsedContent.appendChild(addButton);
+		collapsedContent.appendChild(addButtonContainer);
 		this.toolbarElement.appendChild(collapsedContent);
 	}
 
@@ -138,9 +145,11 @@ export class ContextToolbar {
 		if (this.isQuickAddMode) {
 			this.renderQuickAddForm(expandedContent);
 		} else {
-			const addButton = expandedContent.createEl('button', { text: '+ Add Context' });
-			addButton.className = 'add-button-expanded';
-			addButton.addEventListener('click', () => this.toggleQuickAdd());
+			const addButtonContainer = expandedContent.createEl('div');
+			addButtonContainer.className = 'add-button-expanded';
+			const addButtonComponent = new ButtonComponent(addButtonContainer);
+			addButtonComponent.setButtonText('+ Add Context');
+			addButtonComponent.onClick(() => this.toggleQuickAdd());
 		}
 
 		this.toolbarElement.appendChild(expandedContent);
@@ -179,81 +188,49 @@ export class ContextToolbar {
 		// Context input with autocomplete
 		const inputContainer = inputRow.createEl('div');
 		inputContainer.className = 'input-container';
+		inputContainer.style.position = 'relative'; // For autocomplete positioning
 
-		const contextInput = inputContainer.createEl('input') as HTMLInputElement;
-		contextInput.type = 'text';
-		contextInput.placeholder = 'Context...';
-		contextInput.className = 'context-input';
+		let textComponent: TextComponent;
+		let dropdownComponent: DropdownComponent;
 
-		// Action dropdown
-		const actionSelect = inputRow.createEl('select') as HTMLSelectElement;
-		actionSelect.className = 'action-select';
+		// Use TextComponent for context input
+		textComponent = new TextComponent(inputContainer);
+		textComponent.setPlaceholder('Context...');
 
+		// Use DropdownComponent for action selection  
+		dropdownComponent = new DropdownComponent(inputRow);
 		ACTION_OPTIONS.forEach(option => {
-			const optionEl = actionSelect.createEl('option');
-			optionEl.value = option.value;
-			optionEl.textContent = option.label;
+			dropdownComponent.addOption(option.value, option.label);
 		});
 
-		// Buttons
+		// Buttons using ButtonComponent
 		const buttonRow = form.createEl('div');
 		buttonRow.className = 'button-row';
 
-		const cancelButton = buttonRow.createEl('button', { text: 'Cancel' });
-		cancelButton.className = 'cancel-button';
-		cancelButton.addEventListener('click', () => this.toggleQuickAdd());
+		const cancelButtonComponent = new ButtonComponent(buttonRow);
+		cancelButtonComponent.setButtonText('Cancel');
+		cancelButtonComponent.onClick(() => this.toggleQuickAdd());
 
-		const saveButton = buttonRow.createEl('button', { text: 'Add' });
-		saveButton.className = 'save-button';
-		saveButton.addEventListener('click', () => {
-			this.addContext(contextInput.value, actionSelect.value as ActionType);
+		const saveButtonComponent = new ButtonComponent(buttonRow);
+		saveButtonComponent.setButtonText('Add');
+		saveButtonComponent.onClick(() => {
+			this.addContext(textComponent.getValue(), dropdownComponent.getValue() as ActionType);
 		});
 
-		// Add autocomplete to context input
-		this.addAutocomplete(contextInput);
+		// Add native suggestions to text input
+		this.contextSuggest = new ContextInputSuggest(
+			this.app,
+			textComponent.inputEl, 
+			this.pastContexts, 
+			(selectedValue) => {
+				textComponent.setValue(selectedValue);
+			}
+		);
 
 		// Focus the input
-		setTimeout(() => contextInput.focus(), 50);
+		setTimeout(() => textComponent.inputEl.focus(), 50);
 	}
 
-	private addAutocomplete(input: HTMLInputElement): void {
-		const dropdown = document.createElement('div');
-		dropdown.className = 'autocomplete-dropdown';
-
-		input.parentElement!.appendChild(dropdown);
-
-		input.addEventListener('input', () => {
-			const query = input.value.toLowerCase().trim();
-			
-			if (query.length === 0) {
-				dropdown.style.display = 'none';
-				return;
-			}
-
-			const filtered = FuzzySearch.filterStrings(this.pastContexts, query, 5);
-			
-			if (filtered.length > 0) {
-				dropdown.innerHTML = '';
-				dropdown.style.display = 'block';
-
-				filtered.forEach(suggestion => {
-					const item = dropdown.createEl('div', { text: suggestion });
-					item.className = 'autocomplete-item';
-
-					item.addEventListener('click', () => {
-						input.value = suggestion;
-						dropdown.style.display = 'none';
-					});
-				});
-			} else {
-				dropdown.style.display = 'none';
-			}
-		});
-
-		input.addEventListener('blur', () => {
-			setTimeout(() => dropdown.style.display = 'none', 150);
-		});
-	}
 
 	private toggleExpanded(): void {
 		this.isExpanded = !this.isExpanded;
@@ -319,6 +296,12 @@ export class ContextToolbar {
 	}
 
 	public destroy(): void {
+		// Clean up suggestion instance
+		if (this.contextSuggest) {
+			this.contextSuggest.destroy();
+			this.contextSuggest = null;
+		}
+		
 		if (this.toolbarElement && this.toolbarElement.parentElement) {
 			this.toolbarElement.parentElement.removeChild(this.toolbarElement);
 		}

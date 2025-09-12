@@ -142,13 +142,6 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     position: relative;
 }
 
-.see-you-again-toolbar .context-input {
-    width: 100%;
-}
-
-.see-you-again-toolbar .action-select {
-    min-width: 80px;
-}
 
 .see-you-again-toolbar .button-row {
     display: flex;
@@ -157,25 +150,6 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 }
 
 
-/* Autocomplete Dropdown */
-.see-you-again-toolbar .autocomplete-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    max-height: 120px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-}
-
-.see-you-again-toolbar .autocomplete-item {
-    cursor: pointer;
-}
-
-.see-you-again-toolbar .autocomplete-item:hover {
-    background-color: var(--background-modifier-hover);
-}
 
 /* Modal Components - Namespaced to see-you-again plugin */
 .see-you-again-modal .modal-content {
@@ -190,32 +164,7 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     align-items: center;
 }
 
-.see-you-again-modal .modal-context-input {
-    flex: 1;
-}
 
-.see-you-again-modal .modal-action-select {
-    min-width: 100px;
-}
-
-.see-you-again-modal .modal-autocomplete-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-}
-
-.see-you-again-modal .modal-autocomplete-item {
-    cursor: pointer;
-}
-
-.see-you-again-modal .modal-autocomplete-item:hover {
-    background-color: var(--background-modifier-hover);
-}
 
 .see-you-again-modal .modal-button-container {
     display: flex;
@@ -226,11 +175,6 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     border-top: 1px solid var(--background-modifier-border);
 }
 
-/* Primary buttons - use Obsidian's interactive accent */
-.see-you-again-modal button.mod-cta {
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-}
 
 /* Add Context Modal */
 .see-you-again-modal .modal-no-notes-button-container {

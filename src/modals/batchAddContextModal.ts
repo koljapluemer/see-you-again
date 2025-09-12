@@ -37,7 +37,12 @@ export class BatchAddContextModal extends BaseNoteModal {
 	private async loadSearchResults(): Promise<void> {
 		try {
 			// Get search results from the search view
-			const searchView = this.app.workspace.getLeavesOfType('search')[0]?.view as SearchView;
+			const searchLeaf = this.app.workspace.getLeavesOfType('search')[0];
+			if (!searchLeaf || !searchLeaf.view) {
+				this.showNoSearchMessage('The core search plugin is not enabled');
+				return;
+			}
+			const searchView = searchLeaf.view as unknown as SearchView;
 			
 			if (!searchView) {
 				this.showNoSearchMessage('The core search plugin is not enabled');
@@ -99,7 +104,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 		fieldsContainer.className = 'modal-fields-container';
 
 		// Initialize field manager
-		this.contextFieldManager = new ContextFieldManager(fieldsContainer, (entries) => {
+		this.contextFieldManager = new ContextFieldManager(this.app, fieldsContainer, (entries: ContextEntry[]) => {
 			this.updateButtonStates();
 		});
 
