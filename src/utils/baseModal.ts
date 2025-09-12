@@ -71,7 +71,12 @@ export abstract class BaseNoteModal extends Modal {
 	): HTMLButtonElement {
 		const button = document.createElement('button');
 		button.textContent = text;
-		button.className = `base-modal-button base-modal-button-${variant}`;
+		
+		// Use Obsidian's built-in button classes
+		if (variant === 'primary') {
+			button.className = 'mod-cta';
+		}
+		// For secondary and accent, use default button styling (no extra classes needed)
 
 		button.addEventListener('click', onClick);
 		return button;
