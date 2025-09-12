@@ -145,7 +145,14 @@ export class BatchAddContextModal extends BaseNoteModal {
 			return;
 		}
 
+		const applyButton = this.contentEl.querySelector('#batch-apply-button') as HTMLButtonElement;
+		if (!applyButton) return;
+
 		try {
+			// Disable button and show initial progress
+			applyButton.disabled = true;
+			applyButton.textContent = 'Processing 0%';
+
 			// Prepare metadata object
 			const metadata: SeeYouAgainFrontmatter = {};
 			entries.forEach(entry => {
@@ -154,11 +161,17 @@ export class BatchAddContextModal extends BaseNoteModal {
 			});
 
 			let successCount = 0;
-			let skipCount = 0;
 			const errors: string[] = [];
+			const total = this.searchResults.length;
 
 			// Apply contexts to all notes in search results
-			for (const note of this.searchResults) {
+			for (let i = 0; i < this.searchResults.length; i++) {
+				const note = this.searchResults[i];
+				const progress = Math.round(((i + 1) / total) * 100);
+				
+				// Update button text with progress
+				applyButton.textContent = `Processing ${progress}%`;
+
 				try {
 					// Get existing frontmatter
 					const existingFrontmatter = await this.noteService.getFrontmatter(note);
@@ -172,7 +185,15 @@ export class BatchAddContextModal extends BaseNoteModal {
 					console.error(`Error updating note ${note.path}:`, error);
 					errors.push(`${note.basename}: ${error}`);
 				}
+
+				// Small delay to allow UI to update
+				if (i % 5 === 0) {
+					await new Promise(resolve => setTimeout(resolve, 1));
+				}
 			}
+
+			// Update button to show completion
+			applyButton.textContent = 'Completed!';
 
 			// Show results
 			if (successCount > 0) {
@@ -190,6 +211,12 @@ export class BatchAddContextModal extends BaseNoteModal {
 		} catch (error) {
 			console.error('Error in batch save:', error);
 			this.showError('Error applying contexts. Please try again.');
+			
+			// Reset button on error
+			if (applyButton) {
+				applyButton.textContent = 'Apply to All Notes';
+				applyButton.disabled = false;
+			}
 		}
 	}
 
