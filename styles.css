@@ -166,21 +166,20 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 
 
 
-.see-you-again-modal .modal-button-container {
+/* Shared Modal Button Row */
+.modal-button-row {
     display: flex;
-    justify-content: space-between;
-    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--background-modifier-border);
+    flex-wrap: wrap;
 }
 
 
-/* Add Context Modal */
-.see-you-again-modal .modal-no-notes-button-container {
-    margin-top: 20px;
-    text-align: center;
-}
+
 
 
 .see-you-again-modal .modal-note-preview {
@@ -273,12 +272,6 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     border: 1px solid var(--background-modifier-border);
 }
 
-.see-you-again-modal .context-note-viewer-button-container {
-    text-align: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--background-modifier-border);
-}
 
 
 /* Base Modal */

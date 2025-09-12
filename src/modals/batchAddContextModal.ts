@@ -78,11 +78,10 @@ export class BatchAddContextModal extends BaseNoteModal {
 		contentEl.createEl('p', { text: message });
 		
 		const buttonContainer = contentEl.createEl('div');
-		buttonContainer.className = 'modal-no-notes-button-container';
+		buttonContainer.className = 'modal-button-row';
 		
-		const closeButton = buttonContainer.createEl('button', { text: 'Close' });
-		closeButton.className = 'modal-close-button';
-		closeButton.addEventListener('click', () => this.close());
+		const closeButton = this.createStyledButton('Close', () => this.close());
+		buttonContainer.appendChild(closeButton);
 	}
 
 	private async renderModal(): Promise<void> {
@@ -113,19 +112,15 @@ export class BatchAddContextModal extends BaseNoteModal {
 
 		// Buttons container
 		const buttonsContainer = contentEl.createEl('div');
-		buttonsContainer.className = 'modal-button-container';
+		buttonsContainer.className = 'modal-button-row';
 
-		const leftButtons = buttonsContainer.createEl('div');
-		const rightButtons = buttonsContainer.createEl('div');
-
-		// Left side button (Cancel)
+		// Create buttons directly in the row
 		const cancelButton = this.createStyledButton('Cancel', () => this.close());
-		leftButtons.appendChild(cancelButton);
-
-		// Right side button (Apply to All)
-		const applyButton = this.createStyledButton('Apply to All Notes', () => this.handleBatchSave(), 'primary');
+		const applyButton = this.createStyledButton('Apply to All Notes', () => this.handleBatchSave());
 		applyButton.id = 'batch-apply-button';
-		rightButtons.appendChild(applyButton);
+		
+		buttonsContainer.appendChild(cancelButton);
+		buttonsContainer.appendChild(applyButton);
 
 		// Update button states
 		this.updateButtonStates();

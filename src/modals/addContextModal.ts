@@ -1,6 +1,6 @@
 import { App, TFile, Notice, Plugin } from 'obsidian';
 import { NoteService } from '../noteService';
-import { ContextFieldManager, ModalButtonManager } from '../components/modalComponents';
+import { ContextFieldManager } from '../components/modalComponents';
 import { ContextEntry, SeeYouAgainFrontmatter, SeeYouAgainSettings } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { NoteRenderer } from '../utils/noteRenderer';
@@ -9,7 +9,7 @@ import { ContextUtils } from '../utils/contextUtils';
 export class AddContextModal extends BaseNoteModal {
 	private noteService: NoteService;
 	private contextFieldManager: ContextFieldManager | null = null;
-	private buttonManager: ModalButtonManager | null = null;
+	private saveAndNextButton: HTMLButtonElement | null = null;
 
 	constructor(app: App, plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> }) {
 		super(app, plugin);
@@ -24,7 +24,7 @@ export class AddContextModal extends BaseNoteModal {
 		// Clean up autocomplete instances
 		this.contextFieldManager?.destroy();
 		this.contextFieldManager = null;
-		this.buttonManager = null;
+		this.saveAndNextButton = null;
 		
 		super.onClose();
 	}
@@ -80,11 +80,10 @@ export class AddContextModal extends BaseNoteModal {
 		});
 		
 		const buttonContainer = contentEl.createEl('div');
-		buttonContainer.className = 'modal-no-notes-button-container';
+		buttonContainer.className = 'modal-button-row';
 		
-		const closeButton = buttonContainer.createEl('button', { text: 'Close' });
-		closeButton.className = 'modal-close-button';
-		closeButton.addEventListener('click', () => this.close());
+		const closeButton = this.createStyledButton('Close', () => this.close());
+		buttonContainer.appendChild(closeButton);
 	}
 
 	private async renderModal(): Promise<void> {
@@ -93,8 +92,8 @@ export class AddContextModal extends BaseNoteModal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		// Header with title and jump button
-		this.createHeader(this.currentNote.basename, 'Jump to Note', () => this.jumpToNote());
+		// Header with title only
+		this.createHeader(this.currentNote.basename);
 
 		// Note preview
 		const previewContainer = contentEl.createEl('div');
@@ -128,7 +127,7 @@ export class AddContextModal extends BaseNoteModal {
 
 		// Initialize field manager
 		this.contextFieldManager = new ContextFieldManager(this.app, fieldsContainer, (entries: ContextEntry[]) => {
-			this.buttonManager?.updateButtonStates();
+			this.updateButtonStates();
 		});
 
 		// Load past contexts asynchronously (quality of life, don't wait)
@@ -136,14 +135,21 @@ export class AddContextModal extends BaseNoteModal {
 
 		// Buttons container
 		const buttonsContainer = contentEl.createEl('div');
+		buttonsContainer.className = 'modal-button-row';
 		
-		// Initialize button manager
-		this.buttonManager = new ModalButtonManager(buttonsContainer, {
-			onSkip: () => this.handleSkip(),
-			onExclude: () => this.handleExclude(),
-			onNext: () => this.handleSaveAndNext(),
-			isValidForm: () => this.contextFieldManager?.hasValidEntries() || false
-		});
+		// Create buttons directly
+		const skipButton = this.createStyledButton('Skip', () => this.handleSkip());
+		const excludeButton = this.createStyledButton('Exclude', () => this.handleExclude());
+		const jumpButton = this.createStyledButton('Jump to Note', () => this.jumpToNote());
+		this.saveAndNextButton = this.createStyledButton('Save & Next', () => this.handleSaveAndNext());
+		
+		buttonsContainer.appendChild(skipButton);
+		buttonsContainer.appendChild(excludeButton);
+		buttonsContainer.appendChild(jumpButton);
+		buttonsContainer.appendChild(this.saveAndNextButton);
+		
+		// Set initial button states
+		this.updateButtonStates();
 	}
 
 	private async handleSkip(): Promise<void> {
@@ -201,6 +207,16 @@ export class AddContextModal extends BaseNoteModal {
 
 	private async handleSaveAndNext(): Promise<void> {
 		await this.handleSave();
+	}
+
+	private updateButtonStates(): void {
+		if (!this.saveAndNextButton) return;
+		
+		const isValid = this.contextFieldManager?.hasValidEntries() || false;
+		
+		this.saveAndNextButton.disabled = !isValid;
+		this.saveAndNextButton.style.opacity = isValid ? '1' : '0.5';
+		this.saveAndNextButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
 	}
 
 	private async loadPastContextsAsync(): Promise<void> {

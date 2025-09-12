@@ -62,23 +62,14 @@ export abstract class BaseNoteModal extends Modal {
 	}
 
 	/**
-	 * Create a styled button with hover effects
+	 * Create a native Obsidian button
 	 */
-	protected createStyledButton(
-		text: string, 
-		onClick: () => void, 
-		variant: 'primary' | 'secondary' | 'accent' = 'secondary'
-	): HTMLButtonElement {
+	protected createStyledButton(text: string, onClick: () => void): HTMLButtonElement {
 		const buttonContainer = document.createElement('div');
 		const buttonComponent = new ButtonComponent(buttonContainer);
 		
 		buttonComponent.setButtonText(text);
 		buttonComponent.onClick(onClick);
-		
-		// Use Obsidian's built-in button styling
-		if (variant === 'primary') {
-			buttonComponent.setCta();
-		}
 		
 		return buttonComponent.buttonEl;
 	}
@@ -98,7 +89,7 @@ export abstract class BaseNoteModal extends Modal {
 			const titleEl = headerTop.createEl('h3', { text: title });
 			titleEl.className = 'base-modal-header-title-with-button';
 			
-			const button = this.createStyledButton(buttonText, buttonClick, 'accent');
+			const button = this.createStyledButton(buttonText, buttonClick);
 			headerTop.appendChild(button);
 		} else {
 			// Simple header

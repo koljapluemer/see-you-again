@@ -57,9 +57,12 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			text: `No notes found with the context "${this.hydratedContext}".` 
 		});
 		
-		const closeButton = header.createEl('button', { text: 'Close' });
-		closeButton.className = 'modal-close-button';
-		closeButton.addEventListener('click', () => this.close());
+		// Button row
+		const buttonContainer = contentEl.createEl('div');
+		buttonContainer.className = 'modal-button-row';
+		
+		const closeButton = this.createStyledButton('Close', () => this.close());
+		buttonContainer.appendChild(closeButton);
 	}
 
 	private async renderModal(): Promise<void> {
@@ -68,8 +71,8 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		// Header with context label and jump button
-		const header = this.createHeader(this.currentNote.basename, 'Jump to Note', () => this.jumpToNote());
+		// Header with context label only
+		const header = this.createHeader(this.currentNote.basename);
 		
 		// Add context label above title
 		const contextLabel = document.createElement('div');
@@ -102,14 +105,15 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			previewContainer.style.color = 'var(--text-error)';
 		}
 
-		// Next button
+		// Button row with Next and Jump to Note buttons
 		const buttonContainer = contentEl.createEl('div');
-		buttonContainer.className = 'context-note-viewer-button-container';
+		buttonContainer.className = 'modal-button-row';
 		
-		const nextButton = buttonContainer.createEl('button', { text: 'Next' });
-		nextButton.className = 'context-note-viewer-next-button';
+		const nextButton = this.createStyledButton('Next', () => this.handleNext());
+		const jumpButton = this.createStyledButton('Jump to Note', () => this.jumpToNote());
 		
-		nextButton.addEventListener('click', () => this.handleNext());
+		buttonContainer.appendChild(nextButton);
+		buttonContainer.appendChild(jumpButton);
 	}
 
 	private async handleNext(): Promise<void> {
