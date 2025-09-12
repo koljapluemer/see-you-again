@@ -5,13 +5,18 @@ import { BatchAddContextModal } from './modals/batchAddContextModal';
 import { ContextBrowserModal } from './modals/contextBrowserModal';
 import { SeeYouAgainSettingTab } from './settings';
 import { ToolbarManager } from './components/toolbarManager';
+import { StateManager } from './state/stateManager';
 
 export class SeeYouAgainPlugin extends Plugin {
 	settings: SeeYouAgainSettings;
 	toolbarManager: ToolbarManager;
+	stateManager: StateManager;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
+
+		// Initialize state manager
+		this.stateManager = new StateManager();
 
 		// Add command to open the Add Context modal
 		this.addCommand({

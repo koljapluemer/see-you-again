@@ -1,7 +1,7 @@
-import { App, TFile, Notice, Plugin } from 'obsidian';
+import { App, TFile, Notice } from 'obsidian';
 import { NoteService } from '../noteService';
 import { ContextFieldManager } from '../components/modalComponents';
-import { ContextEntry, SeeYouAgainFrontmatter, SeeYouAgainSettings } from '../types';
+import { ContextEntry, SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextUtils } from '../utils/contextUtils';
 
@@ -16,7 +16,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 	private contextFieldManager: ContextFieldManager | null = null;
 	private searchResults: TFile[] = [];
 
-	constructor(app: App, plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> }) {
+	constructor(app: App, plugin: SeeYouAgainPlugin) {
 		super(app, plugin);
 		this.noteService = new NoteService(app);
 	}

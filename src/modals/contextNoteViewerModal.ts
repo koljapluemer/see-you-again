@@ -1,6 +1,6 @@
-import { App, TFile, Notice, Plugin } from 'obsidian';
+import { App, TFile, Notice } from 'obsidian';
 import { NoteService } from '../noteService';
-import { SeeYouAgainSettings, ActionType } from '../types';
+import { SeeYouAgainPlugin, ActionType } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextBrowserModal } from './contextBrowserModal';
 import { ActionHandler, ActionHandlerContext } from '../actions/baseActionHandler';
@@ -15,7 +15,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 	constructor(
 		app: App, 
-		plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> },
+		plugin: SeeYouAgainPlugin,
 		hydratedContext: string,
 		sanitizedContext: string
 	) {
@@ -27,7 +27,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 	async onOpen(): Promise<void> {
 		// Check if we should resume from a specific note
-		const resumeNotePath = (this as any).resumeFromNotePath;
+		const resumeNotePath = this.plugin.stateManager.get('lastContextNote');
 		if (resumeNotePath) {
 			// Try to load the specific note
 			const file = this.app.vault.getAbstractFileByPath(resumeNotePath);
@@ -166,8 +166,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 	private changeContext(): void {
 		// Clear stored state since user wants to change context
-		(this.plugin as any).lastContextNote = null;
-		(this.plugin as any).lastContext = null;
+		this.plugin.stateManager.clearNavigationState();
 		
 		// Close this modal and open the context browser
 		this.close();
@@ -179,9 +178,11 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		if (!this.currentNote) return;
 
 		try {
-			// Store transient state in plugin instance (not persistent settings)
-			(this.plugin as any).lastContextNote = this.currentNote.path;
-			(this.plugin as any).lastContext = this.sanitizedContext;
+			// Store transient state in state manager
+			this.plugin.stateManager.update({
+				lastContextNote: this.currentNote.path,
+				lastContext: this.sanitizedContext
+			});
 
 			// Open the note in the active leaf (same tab)  
 			const leaf = this.app.workspace.getLeaf(false);

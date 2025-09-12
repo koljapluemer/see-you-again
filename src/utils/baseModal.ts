@@ -1,11 +1,11 @@
-import { App, Modal, TFile, Notice, Plugin, ButtonComponent } from 'obsidian';
-import { SeeYouAgainSettings } from '../types';
+import { App, Modal, TFile, Notice, ButtonComponent } from 'obsidian';
+import { SeeYouAgainPlugin } from '../types';
 
 export abstract class BaseNoteModal extends Modal {
 	protected currentNote: TFile | null = null;
-	protected plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> };
+	protected plugin: SeeYouAgainPlugin;
 
-	constructor(app: App, plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> }) {
+	constructor(app: App, plugin: SeeYouAgainPlugin) {
 		super(app);
 		this.plugin = plugin;
 	}

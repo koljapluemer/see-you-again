@@ -1,12 +1,12 @@
-import { App, Modal, Notice, Plugin } from 'obsidian';
+import { App, Modal, Notice } from 'obsidian';
 import { NoteService } from '../noteService';
-import { SeeYouAgainSettings } from '../types';
+import { SeeYouAgainPlugin } from '../types';
 import { ContextNoteViewerModal } from './contextNoteViewerModal';
 import { FuzzySearch } from '../utils/fuzzySearch';
 import { ContextUtils } from '../utils/contextUtils';
 
 export class ContextBrowserModal extends Modal {
-	private plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> };
+	private plugin: SeeYouAgainPlugin;
 	private noteService: NoteService;
 	private allContexts: string[] = [];
 	private filteredContexts: string[] = [];
@@ -16,7 +16,7 @@ export class ContextBrowserModal extends Modal {
 	private contextList: HTMLElement | null = null;
 	private paginationControls: HTMLElement | null = null;
 
-	constructor(app: App, plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> }) {
+	constructor(app: App, plugin: SeeYouAgainPlugin) {
 		super(app);
 		this.plugin = plugin;
 		this.noteService = new NoteService(app);
@@ -27,8 +27,8 @@ export class ContextBrowserModal extends Modal {
 		this.containerEl.addClass('see-you-again-modal');
 		
 		// Check if we should resume from a previous context/note
-		const lastContextNote = (this.plugin as any).lastContextNote;
-		const lastContext = (this.plugin as any).lastContext;
+		const lastContextNote = this.plugin.stateManager.get('lastContextNote');
+		const lastContext = this.plugin.stateManager.get('lastContext');
 		
 		if (lastContext && lastContextNote) {
 			// Skip the browser and go directly to the note viewer
@@ -36,7 +36,6 @@ export class ContextBrowserModal extends Modal {
 			
 			const hydratedContext = ContextUtils.hydrateContextKey(lastContext);
 			const noteViewerModal = new ContextNoteViewerModal(this.app, this.plugin, hydratedContext, lastContext);
-			(noteViewerModal as any).resumeFromNotePath = lastContextNote;
 			noteViewerModal.open();
 			return;
 		}
@@ -190,19 +189,15 @@ export class ContextBrowserModal extends Modal {
 		this.close();
 		
 		// Check if we should resume from a previous note
-		const lastContextNote = (this.plugin as any).lastContextNote;
-		const lastContext = (this.plugin as any).lastContext;
+		const lastContextNote = this.plugin.stateManager.get('lastContextNote');
+		const lastContext = this.plugin.stateManager.get('lastContext');
 		
 		const noteViewerModal = new ContextNoteViewerModal(this.app, this.plugin, hydratedContext, sanitizedContext);
 		
-		// If the user is selecting the same context they were viewing before, resume from that note
-		if (lastContext === sanitizedContext && lastContextNote) {
-			// Set the specific note to resume from
-			(noteViewerModal as any).resumeFromNotePath = lastContextNote;
-		} else {
-			// Different context selected, clear the stored state so they start fresh
-			(this.plugin as any).lastContextNote = null;
-			(this.plugin as any).lastContext = null;
+		// If the user is selecting the same context they were viewing before, the modal will resume from that note
+		// Otherwise, clear the stored state so they start fresh
+		if (lastContext !== sanitizedContext) {
+			this.plugin.stateManager.clearNavigationState();
 		}
 		
 		noteViewerModal.open();

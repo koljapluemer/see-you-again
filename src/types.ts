@@ -1,6 +1,15 @@
+import { Plugin } from 'obsidian';
+import { StateManager } from './state/stateManager';
+
 export interface SeeYouAgainSettings {
 	lastProcessedNote: string;
 	currentModalNote: string;
+}
+
+export interface SeeYouAgainPlugin extends Plugin {
+	settings: SeeYouAgainSettings;
+	saveSettings(): Promise<void>;
+	stateManager: StateManager;
 }
 
 export const DEFAULT_SETTINGS: SeeYouAgainSettings = {

@@ -1,9 +1,9 @@
-import { App, TFile, Plugin } from 'obsidian';
-import { SeeYouAgainSettings } from '../types';
+import { App, TFile } from 'obsidian';
+import { SeeYouAgainPlugin } from '../types';
 
 export interface ActionHandlerContext {
 	app: App;
-	plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> };
+	plugin: SeeYouAgainPlugin;
 	currentNote: TFile;
 	hydratedContext: string;
 	sanitizedContext: string;
