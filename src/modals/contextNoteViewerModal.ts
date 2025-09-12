@@ -1,14 +1,17 @@
 import { App, TFile, Notice, Plugin } from 'obsidian';
 import { NoteService } from '../noteService';
-import { SeeYouAgainSettings } from '../types';
+import { SeeYouAgainSettings, ActionType } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
-import { NoteRenderer } from '../utils/noteRenderer';
 import { ContextBrowserModal } from './contextBrowserModal';
+import { ActionHandler, ActionHandlerContext } from '../actions/baseActionHandler';
+import { ActionHandlerFactory } from '../actions/actionHandlerFactory';
 
 export class ContextNoteViewerModal extends BaseNoteModal {
 	private noteService: NoteService;
 	private hydratedContext: string;
 	private sanitizedContext: string;
+	private currentActionType: ActionType | null = null;
+	private currentActionHandler: ActionHandler | null = null;
 
 	constructor(
 		app: App, 
@@ -30,6 +33,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			const file = this.app.vault.getAbstractFileByPath(resumeNotePath);
 			if (file instanceof TFile) {
 				this.currentNote = file;
+				await this.loadActionType();
 				await this.renderModal();
 				return;
 			}
@@ -40,6 +44,10 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	onClose(): void {
+		// Clean up the current action handler
+		if (this.currentActionHandler && this.currentActionHandler.cleanup) {
+			this.currentActionHandler.cleanup();
+		}
 		super.onClose();
 	}
 
@@ -52,10 +60,50 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 				return;
 			}
 
+			await this.loadActionType();
 			await this.renderModal();
 		} catch (error) {
 			console.error('Error loading random note with context:', error);
 			this.showError('Error loading note. Please try again.');
+		}
+	}
+
+	private async loadActionType(): Promise<void> {
+		if (!this.currentNote) {
+			this.currentActionType = null;
+			this.currentActionHandler = null;
+			return;
+		}
+
+		try {
+			// Clean up previous handler
+			if (this.currentActionHandler && this.currentActionHandler.cleanup) {
+				this.currentActionHandler.cleanup();
+			}
+
+			const frontmatter = await this.noteService.getFrontmatter(this.currentNote);
+			this.currentActionType = frontmatter[this.sanitizedContext] || null;
+			
+			// Create action handler context
+			const context: ActionHandlerContext = {
+				app: this.app,
+				plugin: this.plugin,
+				currentNote: this.currentNote,
+				hydratedContext: this.hydratedContext,
+				sanitizedContext: this.sanitizedContext,
+				onNext: () => this.handleNext(),
+				onChangeContext: () => this.changeContext(),
+				onJumpToNote: () => this.jumpToNote(),
+				createStyledButton: (text: string, onClick: () => void | Promise<void>) => this.createStyledButton(text, onClick),
+				showError: (message: string) => this.showError(message)
+			};
+
+			// Create the appropriate action handler
+			this.currentActionHandler = await ActionHandlerFactory.createHandler(this.currentActionType, context);
+		} catch (error) {
+			console.error('Error loading action type:', error);
+			this.currentActionType = null;
+			this.currentActionHandler = null;
 		}
 	}
 
@@ -80,56 +128,36 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async renderModal(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote || !this.currentActionHandler) return;
 
 		const { contentEl } = this;
 		contentEl.empty();
 
-		// Header with context label only
-		const header = this.createHeader(this.currentNote.basename);
-		
-		// Add context label above title
-		const contextLabel = document.createElement('div');
-		contextLabel.textContent = `Context: ${this.hydratedContext}`;
-		contextLabel.className = 'context-note-viewer-label';
-		header.insertBefore(contextLabel, header.firstChild);
+		// Action-specific prompt at the very top
+		const promptText = this.currentActionHandler.getPromptText();
+		const promptLabel = contentEl.createEl('div');
+		promptLabel.textContent = promptText;
+		promptLabel.className = 'action-prompt';
+		promptLabel.style.fontWeight = 'bold';
+		promptLabel.style.color = 'var(--text-accent)';
+		promptLabel.style.fontSize = '1.1em';
+		promptLabel.style.marginBottom = '16px';
+		promptLabel.style.textAlign = 'center';
 
-		// Note preview
+		// Header with just the note title
+		const header = this.createHeader(this.currentNote.basename);
+
+		// Note content (handled by action handler)
 		const previewContainer = contentEl.createEl('div');
 		previewContainer.className = 'context-note-viewer-preview';
 		
-		try {
-			const noteContent = await this.app.vault.read(this.currentNote);
-			if (!noteContent || noteContent.trim().length === 0) {
-				previewContainer.createEl('div', { 
-					text: 'This note is empty',
-					cls: 'note-preview-empty'
-				});
-				previewContainer.style.fontStyle = 'italic';
-				previewContainer.style.color = 'var(--text-muted)';
-			} else {
-				await NoteRenderer.renderNoteContent(previewContainer, noteContent, this.currentNote, this.app, this.plugin);
-			}
-		} catch (error) {
-			console.error('Error loading note content:', error);
-			previewContainer.createEl('div', { 
-				text: 'Could not load note preview',
-				cls: 'note-preview-error'
-			});
-			previewContainer.style.color = 'var(--text-error)';
-		}
+		await this.currentActionHandler.renderNoteContent(previewContainer);
 
-		// Button row with Change Context, Jump to Note, Next buttons
+		// Buttons (handled by action handler)
 		const buttonContainer = contentEl.createEl('div');
 		buttonContainer.className = 'modal-button-row';
 		
-		const changeContextButton = this.createStyledButton('Change Context', () => this.changeContext());
-		const jumpButton = this.createStyledButton('Jump to Note', () => this.jumpToNote());
-		const nextButton = this.createStyledButton('Next', () => this.handleNext());
-		
-		buttonContainer.appendChild(changeContextButton);
-		buttonContainer.appendChild(jumpButton);
-		buttonContainer.appendChild(nextButton);
+		this.currentActionHandler.createButtons(buttonContainer);
 	}
 
 	private async handleNext(): Promise<void> {

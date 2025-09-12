@@ -1,0 +1,53 @@
+import { ActionType } from '../types';
+import { ActionHandler, ActionHandlerContext } from './baseActionHandler';
+import { LookAtActionHandler } from './lookAtActionHandler';
+import { DoActionHandler } from './doActionHandler';
+import { IterateActionHandler } from './iterateActionHandler';
+import { ScheduleActionHandler } from './scheduleActionHandler';
+import { ImproveActionHandler } from './improveActionHandler';
+import { EvaluateActionHandler } from './evaluateActionHandler';
+import { MemorizeActionHandler } from './memorizeActionHandler';
+
+export class ActionHandlerFactory {
+	static async createHandler(
+		actionType: ActionType | null, 
+		context: ActionHandlerContext
+	): Promise<ActionHandler> {
+		let handler: ActionHandler;
+
+		switch (actionType) {
+			case 'look-at':
+				handler = new LookAtActionHandler(context);
+				break;
+			case 'do':
+				handler = new DoActionHandler(context);
+				break;
+			case 'iterate':
+				handler = new IterateActionHandler(context);
+				break;
+			case 'schedule':
+				handler = new ScheduleActionHandler(context);
+				break;
+			case 'improve':
+				handler = new ImproveActionHandler(context);
+				break;
+			case 'evaluate':
+				handler = new EvaluateActionHandler(context);
+				break;
+			case 'memorize':
+				handler = new MemorizeActionHandler(context);
+				break;
+			default:
+				// Default to look-at if action type is unknown or null
+				handler = new LookAtActionHandler(context);
+				break;
+		}
+
+		// Initialize the handler if it has an initialize method
+		if ('initialize' in handler && typeof handler.initialize === 'function') {
+			await handler.initialize();
+		}
+
+		return handler;
+	}
+}

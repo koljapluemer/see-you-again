@@ -1,0 +1,77 @@
+import { App, TFile, Plugin } from 'obsidian';
+import { SeeYouAgainSettings } from '../types';
+
+export interface ActionHandlerContext {
+	app: App;
+	plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> };
+	currentNote: TFile;
+	hydratedContext: string;
+	sanitizedContext: string;
+	onNext: () => Promise<void>;
+	onChangeContext: () => void;
+	onJumpToNote: () => Promise<void>;
+	createStyledButton: (text: string, onClick: () => void | Promise<void>) => HTMLElement;
+	showError: (message: string) => void;
+}
+
+export interface ActionHandler {
+	getPromptText(): string;
+	renderNoteContent(container: HTMLElement): Promise<void>;
+	createButtons(buttonContainer: HTMLElement): void;
+	initialize?(): Promise<void>;
+	cleanup?(): void;
+}
+
+export abstract class BaseActionHandler implements ActionHandler {
+	protected context: ActionHandlerContext;
+
+	constructor(context: ActionHandlerContext) {
+		this.context = context;
+	}
+
+	abstract getPromptText(): string;
+
+	async renderNoteContent(container: HTMLElement): Promise<void> {
+		// Default implementation - show full note content
+		try {
+			const noteContent = await this.context.app.vault.read(this.context.currentNote);
+			if (!noteContent || noteContent.trim().length === 0) {
+				container.createEl('div', { 
+					text: 'This note is empty',
+					cls: 'note-preview-empty'
+				});
+				container.style.fontStyle = 'italic';
+				container.style.color = 'var(--text-muted)';
+			} else {
+				const { NoteRenderer } = await import('../utils/noteRenderer');
+				await NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+			}
+		} catch (error) {
+			console.error('Error loading note content:', error);
+			container.createEl('div', { 
+				text: 'Could not load note preview',
+				cls: 'note-preview-error'
+			});
+			container.style.color = 'var(--text-error)';
+		}
+	}
+
+	createButtons(buttonContainer: HTMLElement): void {
+		// Default implementation - standard buttons
+		this.createStandardButtons(buttonContainer);
+	}
+
+	protected createStandardButtons(buttonContainer: HTMLElement): void {
+		const changeContextButton = this.context.createStyledButton('Change Context', this.context.onChangeContext);
+		const jumpButton = this.context.createStyledButton('Jump to Note', this.context.onJumpToNote);
+		const nextButton = this.context.createStyledButton('Next', this.context.onNext);
+		
+		buttonContainer.appendChild(changeContextButton);
+		buttonContainer.appendChild(jumpButton);
+		buttonContainer.appendChild(nextButton);
+	}
+
+	cleanup(): void {
+		// Override in subclasses if cleanup is needed
+	}
+}
