@@ -176,4 +176,28 @@ export class NoteService {
 		const randomIndex = Math.floor(Math.random() * notesWithContext.length);
 		return notesWithContext[randomIndex];
 	}
+
+	/**
+	 * Get existing see-you-again frontmatter for a file
+	 */
+	async getFrontmatter(file: TFile): Promise<SeeYouAgainFrontmatter> {
+		try {
+			const fileCache = this.app.metadataCache.getFileCache(file);
+			const frontmatter = fileCache?.frontmatter;
+			
+			if (frontmatter && frontmatter['see-you-again']) {
+				const seeYouAgain = frontmatter['see-you-again'];
+				
+				// Handle object format (current implementation)
+				if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
+					return seeYouAgain;
+				}
+			}
+			
+			return {};
+		} catch (error) {
+			console.error('Error getting frontmatter for file:', file.path, error);
+			return {};
+		}
+	}
 }

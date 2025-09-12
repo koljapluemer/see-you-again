@@ -1,6 +1,7 @@
 import { Plugin } from 'obsidian';
 import { SeeYouAgainSettings, DEFAULT_SETTINGS } from './types';
 import { AddContextModal } from './modals/addContextModal';
+import { BatchAddContextModal } from './modals/batchAddContextModal';
 import { ContextBrowserModal } from './modals/contextBrowserModal';
 import { SeeYouAgainSettingTab } from './settings';
 import { ToolbarManager } from './components/toolbarManager';
@@ -18,6 +19,15 @@ export class SeeYouAgainPlugin extends Plugin {
 			name: 'Add context to random note',
 			callback: () => {
 				new AddContextModal(this.app, this).open();
+			}
+		});
+
+		// Add command to batch-update contexts from search results
+		this.addCommand({
+			id: 'batch-add-context-from-search',
+			name: 'Batch add contexts from search results',
+			callback: () => {
+				new BatchAddContextModal(this.app, this).open();
 			}
 		});
 

@@ -28,12 +28,13 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 4px;
 }
 
 .see-you-again-toolbar .left-section {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
 }
 
 .see-you-again-toolbar .context-count {
@@ -76,6 +77,7 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 4px;
     margin-bottom: 8px;
 }
 
@@ -175,7 +177,7 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 
 .see-you-again-toolbar .input-row {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     margin-bottom: 6px;
 }
 
@@ -206,7 +208,7 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 
 .see-you-again-toolbar .button-row {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     justify-content: flex-end;
 }
 
@@ -261,25 +263,29 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 }
 
 /* Modal Components - Namespaced to see-you-again plugin */
-.see-you-again-modal .context-field-row {
+.see-you-again-modal .modal-content {
     display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.see-you-again-modal .modal-input-container {
-    flex: 1;
-    position: relative;
+.see-you-again-modal .context-field-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
 }
 
 .see-you-again-modal .modal-context-input {
-    width: 100%;
+    flex: 1;
     padding: 6px;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
     background: var(--background-primary);
     font-family: var(--font-ui);
+    height: 32px;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .see-you-again-modal .modal-action-select {
@@ -289,6 +295,10 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     background: var(--background-primary);
     min-width: 100px;
     font-family: var(--font-ui);
+    height: 32px;
+    box-sizing: border-box;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .see-you-again-modal .modal-autocomplete-dropdown {
@@ -321,6 +331,7 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 .see-you-again-modal .modal-button-container {
     display: flex;
     justify-content: space-between;
+    gap: 4px;
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--background-modifier-border);
@@ -332,7 +343,6 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    margin-right: 8px;
     transition: all 0.2s ease;
     font-family: var(--font-ui);
 }
@@ -386,6 +396,9 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 
 .see-you-again-modal .modal-fields-container {
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 /* Context Browser Modal */
@@ -631,4 +644,19 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
 .see-you-again-modal .note-renderer-link {
     color: var(--text-accent);
     text-decoration: none;
+}
+
+/* Batch Add Context Modal */
+.see-you-again-modal .batch-modal-info {
+    margin-bottom: 20px;
+    padding: 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.see-you-again-modal .batch-modal-info p {
+    margin: 0;
+    color: var(--text-normal);
+    font-size: 14px;
 }

@@ -10,11 +10,11 @@ class FuzzyAutocomplete {
 	private selectedIndex: number = -1;
 	private onSelect: (value: string) => void;
 
-	constructor(input: HTMLInputElement, suggestions: string[], onSelect: (value: string) => void) {
+	constructor(input: HTMLInputElement, suggestions: string[], onSelect: (value: string) => void, container?: HTMLElement) {
 		this.input = input;
 		this.suggestions = suggestions;
 		this.onSelect = onSelect;
-		this.container = input.parentElement!;
+		this.container = container || input.parentElement!;
 		this.createDropdown();
 		this.bindEvents();
 	}
@@ -176,12 +176,9 @@ export class ContextFieldManager {
 	private createFieldRow(entry: ContextEntry, index: number): HTMLElement {
 		const row = document.createElement('div');
 		row.classList.add('context-field-row');
+		row.style.position = 'relative'; // For autocomplete positioning
 
-		// Context input container (for autocomplete positioning)
-		const inputContainer = document.createElement('div');
-		inputContainer.className = 'modal-input-container';
-
-		// Context input field
+		// Context input field (no wrapper container)
 		const contextInput = document.createElement('input');
 		contextInput.type = 'text';
 		contextInput.placeholder = `Context ${index + 1}`;
@@ -198,19 +195,6 @@ export class ContextFieldManager {
 				this.addNewField();
 			}
 		});
-
-		inputContainer.appendChild(contextInput);
-
-		// Create autocomplete for this input
-		const autocomplete = new FuzzyAutocomplete(
-			contextInput, 
-			this.pastContexts, 
-			(selectedValue) => {
-				this.entries[index].context = selectedValue;
-				this.onChangeCallback(this.entries);
-			}
-		);
-		this.autocompleteInstances[index] = autocomplete;
 
 		// Action dropdown
 		const actionSelect = document.createElement('select');
@@ -230,8 +214,20 @@ export class ContextFieldManager {
 			this.onChangeCallback(this.entries);
 		});
 
-		row.appendChild(inputContainer);
+		row.appendChild(contextInput);
 		row.appendChild(actionSelect);
+
+		// Create autocomplete for this input - attach to row, not input
+		const autocomplete = new FuzzyAutocomplete(
+			contextInput, 
+			this.pastContexts, 
+			(selectedValue) => {
+				this.entries[index].context = selectedValue;
+				this.onChangeCallback(this.entries);
+			},
+			row // Pass row as container
+		);
+		this.autocompleteInstances[index] = autocomplete;
 
 		return row;
 	}
