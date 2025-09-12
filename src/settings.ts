@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting, Plugin, Notice } from 'obsidian';
 import { SeeYouAgainSettings } from './types';
+import { FolderSuggest } from './utils/folderSuggester';
 
 export class SeeYouAgainSettingTab extends PluginSettingTab {
 	plugin: Plugin & { settings: SeeYouAgainSettings; saveSettings(): Promise<void> };
@@ -14,6 +15,30 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl('h2', { text: 'See You Again Settings' });
+
+		// Archive Folder setting
+		new Setting(containerEl)
+			.setName('Archive Folder')
+			.setDesc('Folder where notes will be moved when using "Remove Context and Archive"')
+			.addSearch(search => {
+				const saveFolder = async (value: string) => {
+					// Trim folder and Strip ending slash if there
+					let newFolder = value.trim();
+					newFolder = newFolder.replace(/\/$/, "");
+					this.plugin.settings.archiveFolder = newFolder || 'Archive';
+					await this.plugin.saveSettings();
+				};
+
+				new FolderSuggest(this.app, search.inputEl, saveFolder);
+				search
+					.setPlaceholder('Archive')
+					.setValue(this.plugin.settings.archiveFolder);
+				
+				// Save on blur (for manual typing)
+				search.inputEl.addEventListener('blur', async () => {
+					await saveFolder(search.inputEl.value);
+				});
+			});
 
 		// Add a button to reset/clear all processed notes
 		new Setting(containerEl)

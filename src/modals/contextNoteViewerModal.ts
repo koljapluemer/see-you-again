@@ -128,6 +128,9 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 				onNext: () => this.handleNext(),
 				onChangeContext: () => this.changeContext(),
 				onJumpToNote: () => this.jumpToNote(),
+				onRemoveContext: () => this.removeContext(),
+				onRemoveContextAndArchive: () => this.removeContextAndArchive(),
+				onDeleteNote: () => this.deleteNote(),
 				createButton: (container: HTMLElement, text: string, onClick: () => void | Promise<void>) => {
 					const button = new ButtonComponent(container);
 					button.setButtonText(text);
@@ -241,6 +244,47 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		} catch (error) {
 			console.error('Error jumping to note:', error);
 			this.showError('Error opening note. Please try again.');
+		}
+	}
+
+	private async removeContext(): Promise<void> {
+		if (!this.currentNote) return;
+
+		try {
+			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
+			await this.handleNext(); // Load next note after removing context
+		} catch (error) {
+			console.error('Error removing context:', error);
+			this.showError('Error removing context. Please try again.');
+		}
+	}
+
+	private async removeContextAndArchive(): Promise<void> {
+		if (!this.currentNote) return;
+
+		try {
+			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
+			await this.noteService.archiveNote(this.currentNote, this.plugin.settings.archiveFolder);
+			await this.handleNext(); // Load next note after archiving
+		} catch (error) {
+			console.error('Error removing context and archiving:', error);
+			this.showError('Error archiving note. Please try again.');
+		}
+	}
+
+	private async deleteNote(): Promise<void> {
+		if (!this.currentNote) return;
+
+		// Confirm deletion
+		const confirmed = confirm(`Are you sure you want to delete the note "${this.currentNote.basename}"? This cannot be undone.`);
+		if (!confirmed) return;
+
+		try {
+			await this.noteService.deleteNote(this.currentNote);
+			await this.handleNext(); // Load next note after deletion
+		} catch (error) {
+			console.error('Error deleting note:', error);
+			this.showError('Error deleting note. Please try again.');
 		}
 	}
 }

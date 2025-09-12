@@ -316,4 +316,69 @@ export class NoteService {
 			throw error;
 		}
 	}
+
+	/**
+	 * Remove a specific context from a note's see-you-again metadata
+	 */
+	async removeContext(file: TFile, sanitizedContext: string): Promise<void> {
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				if (frontmatter['see-you-again'] && typeof frontmatter['see-you-again'] === 'object') {
+					delete frontmatter['see-you-again'][sanitizedContext];
+					
+					// If no contexts remain, remove the entire see-you-again property
+					if (Object.keys(frontmatter['see-you-again']).length === 0) {
+						delete frontmatter['see-you-again'];
+					}
+				}
+			});
+		} catch (error) {
+			console.error('Error removing context from note:', file.path, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Move a note to the archive folder
+	 */
+	async archiveNote(file: TFile, archiveFolderPath: string): Promise<void> {
+		try {
+			// Ensure archive folder exists
+			const archiveFolder = this.app.vault.getAbstractFileByPath(archiveFolderPath);
+			if (!archiveFolder) {
+				await this.app.vault.createFolder(archiveFolderPath);
+			}
+			
+			// Generate new path in archive folder
+			const newPath = `${archiveFolderPath}/${file.name}`;
+			
+			// Handle name conflicts by appending a number
+			let finalPath = newPath;
+			let counter = 1;
+			while (this.app.vault.getAbstractFileByPath(finalPath)) {
+				const baseName = file.basename;
+				const extension = file.extension;
+				finalPath = `${archiveFolderPath}/${baseName} ${counter}.${extension}`;
+				counter++;
+			}
+			
+			// Move the file
+			await this.app.fileManager.renameFile(file, finalPath);
+		} catch (error) {
+			console.error('Error archiving note:', file.path, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Delete a note from the vault
+	 */
+	async deleteNote(file: TFile): Promise<void> {
+		try {
+			await this.app.vault.delete(file);
+		} catch (error) {
+			console.error('Error deleting note:', file.path, error);
+			throw error;
+		}
+	}
 }
