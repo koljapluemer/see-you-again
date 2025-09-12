@@ -16,27 +16,6 @@ export abstract class BaseNoteModal extends Modal {
 		super.onOpen();
 	}
 
-	/**
-	 * Jump to the current note in a new tab
-	 */
-	protected async jumpToNote(): Promise<void> {
-		if (!this.currentNote) return;
-
-		try {
-			// Open the note in a new leaf (tab)
-			const leaf = this.app.workspace.getLeaf('tab');
-			await leaf.openFile(this.currentNote);
-			
-			// Focus the new leaf
-			this.app.workspace.setActiveLeaf(leaf);
-			
-			// Close the modal
-			this.close();
-		} catch (error) {
-			console.error('Error jumping to note:', error);
-			this.showError('Error opening note. Please try again.');
-		}
-	}
 
 	/**
 	 * Show error message to user

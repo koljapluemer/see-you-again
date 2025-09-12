@@ -219,6 +219,25 @@ export class AddContextModal extends BaseNoteModal {
 		this.saveAndNextButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
 	}
 
+	private async jumpToNote(): Promise<void> {
+		if (!this.currentNote) return;
+
+		try {
+			// Open the note in the active leaf (same tab)
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(this.currentNote);
+			
+			// Focus the leaf
+			this.app.workspace.setActiveLeaf(leaf);
+			
+			// Close the modal
+			this.close();
+		} catch (error) {
+			console.error('Error jumping to note:', error);
+			this.showError('Error opening note. Please try again.');
+		}
+	}
+
 	private async loadPastContextsAsync(): Promise<void> {
 		try {
 			// Load past contexts in the background

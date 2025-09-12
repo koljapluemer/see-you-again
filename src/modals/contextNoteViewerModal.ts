@@ -22,6 +22,19 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	async onOpen(): Promise<void> {
+		// Check if we should resume from a specific note
+		const resumeNotePath = (this as any).resumeFromNotePath;
+		if (resumeNotePath) {
+			// Try to load the specific note
+			const file = this.app.vault.getAbstractFileByPath(resumeNotePath);
+			if (file instanceof TFile) {
+				this.currentNote = file;
+				await this.renderModal();
+				return;
+			}
+		}
+		
+		// Otherwise load a random note
 		await this.loadRandomNote();
 	}
 
@@ -118,5 +131,28 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 	private async handleNext(): Promise<void> {
 		await this.loadRandomNote();
+	}
+
+	private async jumpToNote(): Promise<void> {
+		if (!this.currentNote) return;
+
+		try {
+			// Store transient state in plugin instance (not persistent settings)
+			(this.plugin as any).lastContextNote = this.currentNote.path;
+			(this.plugin as any).lastContext = this.sanitizedContext;
+
+			// Open the note in the active leaf (same tab)  
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(this.currentNote);
+			
+			// Focus the leaf
+			this.app.workspace.setActiveLeaf(leaf);
+			
+			// Close the modal
+			this.close();
+		} catch (error) {
+			console.error('Error jumping to note:', error);
+			this.showError('Error opening note. Please try again.');
+		}
 	}
 }

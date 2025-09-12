@@ -25,6 +25,22 @@ export class ContextBrowserModal extends Modal {
 	async onOpen(): Promise<void> {
 		// Add our namespace class to the modal
 		this.containerEl.addClass('see-you-again-modal');
+		
+		// Check if we should resume from a previous context/note
+		const lastContextNote = (this.plugin as any).lastContextNote;
+		const lastContext = (this.plugin as any).lastContext;
+		
+		if (lastContext && lastContextNote) {
+			// Skip the browser and go directly to the note viewer
+			this.close();
+			
+			const hydratedContext = ContextUtils.hydrateContextKey(lastContext);
+			const noteViewerModal = new ContextNoteViewerModal(this.app, this.plugin, hydratedContext, lastContext);
+			(noteViewerModal as any).resumeFromNotePath = lastContextNote;
+			noteViewerModal.open();
+			return;
+		}
+		
 		await this.loadContexts();
 		this.renderModal();
 	}
@@ -173,7 +189,22 @@ export class ContextBrowserModal extends Modal {
 		// Close this modal and open the note viewer
 		this.close();
 		
+		// Check if we should resume from a previous note
+		const lastContextNote = (this.plugin as any).lastContextNote;
+		const lastContext = (this.plugin as any).lastContext;
+		
 		const noteViewerModal = new ContextNoteViewerModal(this.app, this.plugin, hydratedContext, sanitizedContext);
+		
+		// If the user is selecting the same context they were viewing before, resume from that note
+		if (lastContext === sanitizedContext && lastContextNote) {
+			// Set the specific note to resume from
+			(noteViewerModal as any).resumeFromNotePath = lastContextNote;
+		} else {
+			// Different context selected, clear the stored state so they start fresh
+			(this.plugin as any).lastContextNote = null;
+			(this.plugin as any).lastContext = null;
+		}
+		
 		noteViewerModal.open();
 	}
 }
