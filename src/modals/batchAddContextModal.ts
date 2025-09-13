@@ -116,10 +116,12 @@ export class BatchAddContextModal extends BaseNoteModal {
 
 		// Create buttons directly in the row
 		const cancelButton = this.createStyledButton('Cancel', () => this.close());
+		const excludeAllButton = this.createStyledButton('Exclude All', () => this.handleExcludeAll());
 		const applyButton = this.createStyledButton('Apply to All Notes', () => this.handleBatchSave());
 		applyButton.id = 'batch-apply-button';
 		
 		buttonsContainer.appendChild(cancelButton);
+		buttonsContainer.appendChild(excludeAllButton);
 		buttonsContainer.appendChild(applyButton);
 
 		// Update button states
@@ -217,6 +219,52 @@ export class BatchAddContextModal extends BaseNoteModal {
 				applyButton.textContent = 'Apply to All Notes';
 				applyButton.disabled = false;
 			}
+		}
+	}
+
+	private async handleExcludeAll(): Promise<void> {
+		try {
+			let successCount = 0;
+			const errors: string[] = [];
+			const total = this.searchResults.length;
+
+			// Show initial notice
+			new Notice(`Starting to exclude ${total} notes...`);
+
+			// Exclude all notes in search results
+			for (let i = 0; i < this.searchResults.length; i++) {
+				const note = this.searchResults[i];
+				
+				try {
+					await this.noteService.excludeNote(note);
+					successCount++;
+				} catch (error) {
+					console.error(`Error excluding note ${note.path}:`, error);
+					errors.push(`${note.basename}: ${error}`);
+				}
+
+				// Small delay to allow UI to update
+				if (i % 5 === 0) {
+					await new Promise(resolve => setTimeout(resolve, 1));
+				}
+			}
+
+			// Show results
+			if (successCount > 0) {
+				new Notice(`Successfully excluded ${successCount} notes from future sessions`);
+			}
+
+			if (errors.length > 0) {
+				console.error('Batch exclude errors:', errors);
+				this.showError(`Failed to exclude ${errors.length} notes. Check console for details.`);
+			}
+
+			// Close modal after showing results
+			setTimeout(() => this.close(), 1000);
+			
+		} catch (error) {
+			console.error('Error in batch exclude:', error);
+			this.showError('Error excluding notes. Please try again.');
 		}
 	}
 
