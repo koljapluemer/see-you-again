@@ -19,7 +19,7 @@ export class SeeYouAgainPlugin extends Plugin {
 		// Add command to open the Add Context modal
 		this.addCommand({
 			id: 'open-add-context-modal',
-			name: 'Add context to random note',
+			name: 'Add context to a random note',
 			callback: () => {
 				new AddContextModal(this.app, this).open();
 			}
@@ -28,7 +28,7 @@ export class SeeYouAgainPlugin extends Plugin {
 		// Add command to batch-update contexts from search results
 		this.addCommand({
 			id: 'batch-add-context-from-search',
-			name: 'Batch add contexts from search results',
+			name: 'Batch-add contexts for all search results',
 			callback: () => {
 				new BatchAddContextModal(this.app, this).open();
 			}
@@ -37,7 +37,7 @@ export class SeeYouAgainPlugin extends Plugin {
 		// Add command to start context browsing
 		this.addCommand({
 			id: 'start-context-browser',
-			name: 'Start context...',
+			name: 'Start queue for context...',
 			callback: () => {
 				new ContextBrowserModal(this.app, this).open();
 			}
@@ -53,7 +53,7 @@ export class SeeYouAgainPlugin extends Plugin {
 		});
 
 		// Add sidebar button for managing contexts
-		this.addRibbonIcon('tags', 'Manage contexts for current note', () => {
+		this.addRibbonIcon('tags', 'Manage contexts for currently open note', () => {
 			new CurrentNoteContextModal(this.app, this).open();
 		});
 

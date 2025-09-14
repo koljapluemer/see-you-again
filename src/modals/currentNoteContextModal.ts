@@ -67,7 +67,7 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		contentEl.empty();
 
 		// Create header with note filename
-		this.createHeader(`Manage Contexts: ${this.currentNote.basename}`);
+		this.createHeader(this.currentNote.basename);
 
 		// Context fields container
 		const fieldsContainer = contentEl.createEl('div');

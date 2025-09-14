@@ -1,8 +1,8 @@
+import { Setting } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
 
 export class EvaluateActionHandler extends BaseActionHandler {
 	private evaluationText = '';
-	private textArea: HTMLTextAreaElement | null = null;
 
 	getPromptText(): string {
 		return 'Evaluate';
@@ -12,19 +12,21 @@ export class EvaluateActionHandler extends BaseActionHandler {
 		// First render the note content
 		await super.renderNoteContent(container);
 
-		// Then add the evaluation text box
+		// Then add the evaluation text box using Obsidian's Setting component
 		const evaluationContainer = container.createEl('div');
 		evaluationContainer.className = 'evaluation-container';
 		evaluationContainer.style.marginTop = '20px';
 
-		evaluationContainer.createEl('label', { text: 'Your evaluation:' });
-
-		this.textArea = evaluationContainer.createEl('textarea');
-		this.textArea.placeholder = 'Write your evaluation here...';
-
-		this.textArea.addEventListener('input', (e) => {
-			this.evaluationText = (e.target as HTMLTextAreaElement).value;
-		});
+		new Setting(evaluationContainer)
+			.setName('Your evaluation')
+			.setDesc('Write your evaluation of this note')
+			.addTextArea((textArea) => {
+				textArea.setPlaceholder('Write your evaluation here...');
+				textArea.setValue(this.evaluationText);
+				textArea.onChange((value) => {
+					this.evaluationText = value;
+				});
+			});
 	}
 
 	createButtons(buttonContainer: HTMLElement): void {
@@ -66,7 +68,6 @@ export class EvaluateActionHandler extends BaseActionHandler {
 	}
 
 	cleanup(): void {
-		this.textArea = null;
 		this.evaluationText = '';
 	}
 }
