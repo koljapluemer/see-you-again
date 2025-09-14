@@ -1,9 +1,14 @@
 import { App, TFile } from 'obsidian';
 import { SeeYouAgainFrontmatter, ActionType } from './types';
 import { DateUtils } from './utils/dateUtils';
+import { FSRSService } from './services/fsrsService';
 
 export class NoteService {
-	constructor(private app: App) {}
+	private fsrsService: FSRSService;
+
+	constructor(private app: App) {
+		this.fsrsService = new FSRSService(this);
+	}
 
 	/**
 	 * Get all markdown files in the vault
@@ -188,30 +193,56 @@ export class NoteService {
 
 	/**
 	 * Get notes with a specific context that have a particular action type
+	 * For memorize notes, filter by FSRS due date instead of seen-you-again timestamp
 	 */
 	async getNotesWithContextAndActionType(sanitizedContext: string, actionType: ActionType): Promise<TFile[]> {
 		const allFiles = this.getAllMarkdownFiles();
 		const matchingFiles: TFile[] = [];
+		const unseenMemorizeFiles: TFile[] = [];
+		const dueMemorizeFiles: TFile[] = [];
+		const currentDate = new Date();
 
 		for (const file of allFiles) {
 			try {
 				const fileCache = this.app.metadataCache.getFileCache(file);
 				const frontmatter = fileCache?.frontmatter;
-				
+
 				if (frontmatter && frontmatter['see-you-again']) {
 					const seeYouAgain = frontmatter['see-you-again'];
-					
+
 					// Handle object format (current implementation)
 					if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
 						// Check if this note has the context AND the specific action type
 						if (seeYouAgain[sanitizedContext] === actionType) {
-							matchingFiles.push(file);
+							if (actionType === 'memorize') {
+								// For memorize notes, use FSRS due date logic
+								const hasCardData = await this.fsrsService.hasCardData(file);
+								if (!hasCardData) {
+									// No FSRS data = unseen, add to unseen list
+									unseenMemorizeFiles.push(file);
+								} else {
+									// Check if due for review
+									const dueDate = await this.fsrsService.getCardDueDate(file);
+									if (dueDate && dueDate <= currentDate) {
+										dueMemorizeFiles.push(file);
+									}
+								}
+							} else {
+								// For other action types, use existing logic
+								matchingFiles.push(file);
+							}
 						}
 					}
 				}
 			} catch (error) {
 				console.error('Error checking context and action type in file:', file.path, error);
 			}
+		}
+
+		// For memorize notes: return up to 20 unseen, then due notes
+		if (actionType === 'memorize') {
+			const limitedUnseen = unseenMemorizeFiles.slice(0, 20);
+			return [...limitedUnseen, ...dueMemorizeFiles];
 		}
 
 		return matchingFiles;
@@ -366,6 +397,20 @@ export class NoteService {
 			await this.app.fileManager.renameFile(file, finalPath);
 		} catch (error) {
 			console.error('Error archiving note:', file.path, error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Set a specific property in note frontmatter
+	 */
+	async setFrontmatterProperty(file: TFile, property: string, value: any): Promise<void> {
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter: any) => {
+				frontmatter[property] = value;
+			});
+		} catch (error) {
+			console.error(`Error setting frontmatter property ${property} for file:`, file.path, error);
 			throw error;
 		}
 	}

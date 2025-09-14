@@ -1,5 +1,8 @@
 import { ButtonComponent } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
+import { FSRSService } from '../services/fsrsService';
+import { Grade, Card } from 'ts-fsrs';
+import { NoteService } from '../noteService';
 
 export class MemorizeActionHandler extends BaseActionHandler {
 	private isBodyRevealed: boolean = false;
@@ -12,8 +15,17 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	private hasPartialReveal: boolean = false;
 	private contentBeforeSeparator: string = '';
 	private fullContent: string = '';
+	private fsrsService: FSRSService | null = null;
+	private currentCard: Card | null = null;
 
 	async initialize(): Promise<void> {
+		// Initialize FSRS service
+		const noteService = new NoteService(this.context.app);
+		this.fsrsService = new FSRSService(noteService);
+
+		// Load FSRS card data
+		this.currentCard = await this.fsrsService.loadCard(this.context.currentNote);
+
 		// Check if this is a fill-in-the-blank note (filename starts with ">")
 		this.isFillInBlank = this.context.currentNote.basename.startsWith('>');
 
@@ -250,25 +262,53 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		this.addSpacedRepetitionButtons(container);
 	}
 
+	private async scoreCard(grade: Grade): Promise<void> {
+		if (!this.currentCard || !this.fsrsService) {
+			console.error('No card or FSRS service available for scoring');
+			await this.context.onNext();
+			return;
+		}
+
+		try {
+			// Review the card with the given grade
+			const { card: updatedCard } = this.fsrsService.reviewCard(this.currentCard, grade);
+
+			// Save the updated card data to frontmatter
+			await this.fsrsService.saveCard(this.context.currentNote, updatedCard);
+
+			// Update current card reference
+			this.currentCard = updatedCard;
+
+			console.log(`Card scored with grade ${grade}. Next due: ${updatedCard.due}`);
+
+			// Move to next note
+			await this.context.onNext();
+		} catch (error) {
+			console.error('Error scoring card:', error);
+			this.context.showError('Failed to save spaced repetition data');
+			await this.context.onNext();
+		}
+	}
+
 	private addSpacedRepetitionButtons(container: HTMLElement): void {
 		const srButtonContainer = container.createEl('div');
 		srButtonContainer.className = 'modal-button-row';
 
-		// Create the four spaced repetition buttons with standard Obsidian styling
+		// Create the four spaced repetition buttons with FSRS scoring
 		this.context.createButton(srButtonContainer, 'Wrong', async () => {
-			await this.context.onNext();
+			await this.scoreCard(1); // Grade.Again
 		});
 
 		this.context.createButton(srButtonContainer, 'Hard', async () => {
-			await this.context.onNext();
+			await this.scoreCard(2); // Grade.Hard
 		});
 
 		this.context.createButton(srButtonContainer, 'Correct', async () => {
-			await this.context.onNext();
+			await this.scoreCard(3); // Grade.Good
 		});
 
 		this.context.createButton(srButtonContainer, 'Easy', async () => {
-			await this.context.onNext();
+			await this.scoreCard(4); // Grade.Easy
 		});
 	}
 
@@ -290,5 +330,6 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		this.hasPartialReveal = false;
 		this.contentBeforeSeparator = '';
 		this.fullContent = '';
+		this.currentCard = null;
 	}
 }
