@@ -37,18 +37,21 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			if (file instanceof TFile) {
 				this.currentNote = file;
 
-				// Get the action type from frontmatter for resume case
-				const frontmatter = this.noteService.getFrontmatter(file);
-				this.currentActionType = frontmatter[this.sanitizedContext];
+			// Get the action type from frontmatter for resume case
+			const frontmatter = this.noteService.getFrontmatter(file);
+			this.currentActionType = frontmatter[this.sanitizedContext];
 
-				if (this.currentActionType) {
-					// Track the resumed action type
-					this.plugin.stateManager.incrementActionTypeUsage(this.currentActionType);
-				}
-
+			if (this.currentActionType) {
+				// Track the resumed action type
+				this.plugin.stateManager.incrementActionTypeUsage(this.currentActionType);
+				
 				await this.loadActionType();
 				await this.renderModal();
 				return;
+			} else {
+				// Context no longer exists on this note, clear the invalid state
+				this.plugin.stateManager.clearNavigationState();
+			}
 			}
 		}
 
