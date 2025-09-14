@@ -181,7 +181,12 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			console.error('Failed to mark note as seen:', error);
 		}
 
-		// Action-specific prompt at the very top
+		// Note title (only for non-memorize actions, memorize handles its own heading)
+		if (this.currentActionType !== 'memorize') {
+			this.createHeader(this.currentNote.basename);
+		}
+
+		// Action-specific prompt
 		const promptText = this.currentActionHandler.getPromptText();
 		const promptLabel = contentEl.createEl('div');
 		promptLabel.textContent = promptText;
