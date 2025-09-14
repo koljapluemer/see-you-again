@@ -186,10 +186,12 @@ export class NoteService {
 	/**
 	 * Get notes with a specific context that have a particular action type
 	 * For memorize notes, filter by FSRS due date instead of seen-you-again timestamp
+	 * For other action types, prioritize notes not seen today
 	 */
 	getNotesWithContextAndActionType(sanitizedContext: string, actionType: ActionType): TFile[] {
 		const allFiles = this.getAllMarkdownFiles();
-		const matchingFiles: TFile[] = [];
+		const unseenNonMemorizeFiles: TFile[] = [];
+		const seenNonMemorizeFiles: TFile[] = [];
 		const unseenMemorizeFiles: TFile[] = [];
 		const dueMemorizeFiles: TFile[] = [];
 		const currentDate = new Date();
@@ -221,8 +223,13 @@ export class NoteService {
 									}
 								}
 							} else {
-								// For other action types, use existing logic
-								matchingFiles.push(file);
+								// For other action types, check if note was seen today
+								const lastSeen: unknown = frontmatter['seen-you-again'];
+								if (this.wasSeenToday(lastSeen as string | undefined)) {
+									seenNonMemorizeFiles.push(file);
+								} else {
+									unseenNonMemorizeFiles.push(file);
+								}
 							}
 						}
 					}
@@ -238,7 +245,11 @@ export class NoteService {
 			return [...limitedUnseen, ...dueMemorizeFiles];
 		}
 
-		return matchingFiles;
+		// For other action types: return unseen notes first, then seen notes (only if no unseen available)
+		if (unseenNonMemorizeFiles.length > 0) {
+			return unseenNonMemorizeFiles;
+		}
+		return seenNonMemorizeFiles;
 	}
 
 	/**
