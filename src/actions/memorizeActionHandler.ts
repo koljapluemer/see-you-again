@@ -9,6 +9,9 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	private originalTitle: string = '';
 	private titleWithBlank: string = '';
 	private hiddenWord: string = '';
+	private hasPartialReveal: boolean = false;
+	private contentBeforeSeparator: string = '';
+	private fullContent: string = '';
 
 	async initialize(): Promise<void> {
 		// Check if this is a fill-in-the-blank note (filename starts with ">")
@@ -21,11 +24,30 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		// If fill-in-the-blank, prepare the title with blank
 		if (this.isFillInBlank) {
 			this.prepareFilLInBlank();
+		} else if (!this.isFillInBlank) {
+			// Check for partial reveal mode (has '---' separator)
+			this.checkForPartialReveal();
 		}
 	}
 
 	private parseNoteContent(content: string): void {
-		const lines = content.split('\n');
+		// Remove frontmatter if present (proper YAML frontmatter detection)
+		let contentWithoutFrontmatter = content;
+		if (content.startsWith('---\n')) {
+			const lines = content.split('\n');
+			let endIndex = -1;
+			for (let i = 1; i < lines.length; i++) {
+				if (lines[i] === '---') {
+					endIndex = i;
+					break;
+				}
+			}
+			if (endIndex !== -1) {
+				contentWithoutFrontmatter = lines.slice(endIndex + 1).join('\n').trim();
+			}
+		}
+
+		const lines = contentWithoutFrontmatter.split('\n');
 
 		// Find the first heading (line starting with #)
 		let headingIndex = -1;
@@ -43,11 +65,24 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		} else {
 			// No heading found, use the note title as heading and full content as body
 			this.noteHeading = `# ${this.context.currentNote.basename}`;
-			this.noteBody = content.trim();
+			this.noteBody = contentWithoutFrontmatter.trim();
 		}
 
 		// Store original title for fill-in-the-blank
 		this.originalTitle = this.noteHeading;
+
+		// Store full content for partial reveal mode (raw content without frontmatter)
+		this.fullContent = contentWithoutFrontmatter;
+	}
+
+	private checkForPartialReveal(): void {
+		// Check if full content contains '---' separator
+		const separatorIndex = this.fullContent.indexOf('---');
+		if (separatorIndex !== -1) {
+			this.hasPartialReveal = true;
+			// Content before separator (just the raw content, no heading)
+			this.contentBeforeSeparator = this.fullContent.substring(0, separatorIndex).trim();
+		}
 	}
 
 	private prepareFilLInBlank(): void {
@@ -85,6 +120,9 @@ export class MemorizeActionHandler extends BaseActionHandler {
 			if (this.isFillInBlank) {
 				// For fill-in-the-blank notes, show title with blank and full body immediately
 				await this.renderFillInBlank(container);
+			} else if (this.hasPartialReveal) {
+				// For partial reveal mode, show content before '---'
+				await this.renderPartialReveal(container);
 			} else {
 				// Show heading only, then reveal button
 				const { NoteRenderer } = await import('../utils/noteRenderer');
@@ -108,6 +146,26 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		}
 	}
 
+	private async renderPartialReveal(container: HTMLElement): Promise<void> {
+		const { NoteRenderer } = await import('../utils/noteRenderer');
+
+		// Show filename as title
+		const filenameTitle = `# ${this.context.currentNote.basename}`;
+		await NoteRenderer.renderNoteContent(container, filenameTitle, this.context.currentNote, this.context.app, this.context.plugin);
+
+		// Show content before separator if it exists
+		if (this.contentBeforeSeparator) {
+			await NoteRenderer.renderNoteContent(container, this.contentBeforeSeparator, this.context.currentNote, this.context.app, this.context.plugin);
+		}
+
+		const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
+			this.revealFullContent(container);
+		});
+
+		(this as any).revealButton = revealButtonEl;
+		(this as any).contentContainer = container;
+	}
+
 	private async renderFillInBlank(container: HTMLElement): Promise<void> {
 		const { NoteRenderer } = await import('../utils/noteRenderer');
 
@@ -125,6 +183,30 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 		(this as any).revealButton = revealButtonEl;
 		(this as any).contentContainer = container;
+	}
+
+	private async revealFullContent(container: HTMLElement): Promise<void> {
+		if (this.isBodyRevealed) return;
+
+		this.isBodyRevealed = true;
+
+		const revealButton = (this as any).revealButton;
+		if (revealButton) {
+			revealButton.remove();
+		}
+
+		// Re-render with filename as title + complete content
+		container.empty();
+		const { NoteRenderer } = await import('../utils/noteRenderer');
+
+		// Show filename as title
+		const filenameTitle = `# ${this.context.currentNote.basename}`;
+		await NoteRenderer.renderNoteContent(container, filenameTitle, this.context.currentNote, this.context.app, this.context.plugin);
+
+		// Show full content
+		await NoteRenderer.renderNoteContent(container, this.fullContent, this.context.currentNote, this.context.app, this.context.plugin);
+
+		this.addSpacedRepetitionButtons(container);
 	}
 
 	private async revealFillInBlank(container: HTMLElement): Promise<void> {
@@ -205,5 +287,8 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		this.originalTitle = '';
 		this.titleWithBlank = '';
 		this.hiddenWord = '';
+		this.hasPartialReveal = false;
+		this.contentBeforeSeparator = '';
+		this.fullContent = '';
 	}
 }
