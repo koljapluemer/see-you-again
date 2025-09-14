@@ -97,7 +97,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 				}
 			}
 
-			container.innerHTML = '';
+			container.empty();
 			container.createEl('div', { text: `Total notes: ${allFiles.length}` });
 			container.createEl('div', { text: `Processed/Excluded: ${processedCount}` });
 			container.createEl('div', { text: `Available for processing: ${unprocessedCount}` });

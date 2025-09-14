@@ -93,7 +93,7 @@ export class ContextFieldManager {
 		this.suggestInstances.forEach(instance => instance?.destroy());
 		this.suggestInstances = [];
 		
-		this.container.innerHTML = '';
+		this.container.empty();
 		
 		this.entries.forEach((entry, index) => {
 			const fieldRow = this.createFieldRow(entry, index);

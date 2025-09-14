@@ -180,11 +180,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		const promptLabel = contentEl.createEl('div');
 		promptLabel.textContent = promptText;
 		promptLabel.className = 'action-prompt';
-		promptLabel.style.fontWeight = 'bold';
-		promptLabel.style.color = 'var(--text-accent)';
-		promptLabel.style.fontSize = '1.1em';
-		promptLabel.style.marginBottom = '16px';
-		promptLabel.style.textAlign = 'center';
 
 		// Note title (only for non-memorize actions, memorize handles its own heading)
 		if (this.currentActionType !== 'memorize') {

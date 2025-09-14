@@ -90,8 +90,7 @@ export class MemorizeActionHandler extends BaseActionHandler {
 				text: 'Could not load note content',
 				cls: 'note-preview-error'
 			});
-			container.style.color = 'var(--text-error)';
-		}
+			}
 	}
 
 	private async renderPartialReveal(container: HTMLElement): Promise<void> {

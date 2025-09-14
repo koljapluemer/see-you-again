@@ -55,8 +55,7 @@ export abstract class BaseActionHandler implements ActionHandler {
 				text: 'Could not load note preview',
 				cls: 'note-preview-error'
 			});
-			container.style.color = 'var(--text-error)';
-		}
+			}
 	}
 
 	createButtons(buttonContainer: HTMLElement): void {

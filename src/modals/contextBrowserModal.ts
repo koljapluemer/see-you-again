@@ -117,7 +117,7 @@ export class ContextBrowserModal extends Modal {
 	private renderContextList(): void {
 		if (!this.contextList) {return;}
 
-		this.contextList.innerHTML = '';
+		this.contextList.empty();
 
 		if (this.filteredContexts.length === 0) {
 			const emptyMessage = this.contextList.createEl('div', { text: 'No contexts found' });
@@ -147,7 +147,7 @@ export class ContextBrowserModal extends Modal {
 	private renderPaginationControls(): void {
 		if (!this.paginationControls) {return;}
 
-		this.paginationControls.innerHTML = '';
+		this.paginationControls.empty();
 
 		const totalPages = Math.ceil(this.filteredContexts.length / this.itemsPerPage);
 

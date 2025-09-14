@@ -107,8 +107,6 @@ export class AddContextModal extends BaseNoteModal {
 					text: 'This note is empty',
 					cls: 'note-preview-empty'
 				});
-				previewContainer.style.fontStyle = 'italic';
-				previewContainer.style.color = 'var(--text-muted)';
 			} else {
 				// Render the markdown content
 				NoteRenderer.renderNoteContent(previewContainer, noteContent, this.currentNote, this.app, this.plugin);
@@ -118,7 +116,6 @@ export class AddContextModal extends BaseNoteModal {
 				text: 'Could not load note preview',
 				cls: 'note-preview-error'
 			});
-			previewContainer.style.color = 'var(--text-error)';
 		}
 
 		// Context fields container

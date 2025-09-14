@@ -16,7 +16,6 @@ export class EvaluateActionHandler extends BaseActionHandler {
 		// Then add the evaluation text box using Obsidian's Setting component
 		const evaluationContainer = container.createEl('div');
 		evaluationContainer.className = 'evaluation-container';
-		evaluationContainer.style.marginTop = '20px';
 
 		new Setting(evaluationContainer)
 			.setName('Your evaluation')
