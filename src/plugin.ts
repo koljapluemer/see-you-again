@@ -52,6 +52,11 @@ export class SeeYouAgainPlugin extends Plugin {
 			}
 		});
 
+		// Add sidebar button for starting context browser
+		this.addRibbonIcon('swords', 'Start queue for context...', () => {
+			new ContextBrowserModal(this.app, this).open();
+		});
+
 		// Add sidebar button for managing contexts
 		this.addRibbonIcon('tags', 'Manage contexts for currently open note', () => {
 			new CurrentNoteContextModal(this.app, this).open();
