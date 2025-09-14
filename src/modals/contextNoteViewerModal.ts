@@ -192,8 +192,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		promptLabel.style.marginBottom = '16px';
 		promptLabel.style.textAlign = 'center';
 
-		// Header with just the note title
-		const header = this.createHeader(this.currentNote.basename);
 
 		// Note content (handled by action handler)
 		const previewContainer = contentEl.createEl('div');

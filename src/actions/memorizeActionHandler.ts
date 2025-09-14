@@ -5,16 +5,28 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	private isBodyRevealed: boolean = false;
 	private noteHeading: string = '';
 	private noteBody: string = '';
+	private isFillInBlank: boolean = false;
+	private originalTitle: string = '';
+	private titleWithBlank: string = '';
+	private hiddenWord: string = '';
 
 	async initialize(): Promise<void> {
+		// Check if this is a fill-in-the-blank note (filename starts with ">")
+		this.isFillInBlank = this.context.currentNote.basename.startsWith('>');
+
 		// Parse the note content to separate heading and body
 		const noteContent = await this.context.app.vault.read(this.context.currentNote);
 		this.parseNoteContent(noteContent);
+
+		// If fill-in-the-blank, prepare the title with blank
+		if (this.isFillInBlank) {
+			this.prepareFilLInBlank();
+		}
 	}
 
 	private parseNoteContent(content: string): void {
 		const lines = content.split('\n');
-		
+
 		// Find the first heading (line starting with #)
 		let headingIndex = -1;
 		for (let i = 0; i < lines.length; i++) {
@@ -33,6 +45,33 @@ export class MemorizeActionHandler extends BaseActionHandler {
 			this.noteHeading = `# ${this.context.currentNote.basename}`;
 			this.noteBody = content.trim();
 		}
+
+		// Store original title for fill-in-the-blank
+		this.originalTitle = this.noteHeading;
+	}
+
+	private prepareFilLInBlank(): void {
+		// Extract text from heading (remove # symbols)
+		const titleText = this.noteHeading.replace(/^#+\s*/, '');
+
+		// Split into words and filter out empty strings
+		const words = titleText.split(/\s+/).filter(word => word.length > 0);
+
+		if (words.length === 0) {
+			this.titleWithBlank = this.noteHeading;
+			return;
+		}
+
+		// Choose a random word to hide
+		const randomIndex = Math.floor(Math.random() * words.length);
+		this.hiddenWord = words[randomIndex];
+
+		// Replace the word with a blank
+		words[randomIndex] = '＿';
+
+		// Reconstruct the heading with the same # symbols
+		const headingPrefix = this.noteHeading.match(/^#+\s*/)?.[0] || '# ';
+		this.titleWithBlank = headingPrefix + words.join(' ');
 	}
 
 	getPromptText(): string {
@@ -41,19 +80,25 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 	async renderNoteContent(container: HTMLElement): Promise<void> {
 		try {
-			// Just show the reveal button - the heading is already shown in the modal header
-			const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
-				this.revealNoteBody(container);
-			});
-			revealButtonEl.style.marginBottom = '16px';
+			if (this.isFillInBlank) {
+				// For fill-in-the-blank notes, show title with blank and full body immediately
+				await this.renderFillInBlank(container);
+			} else {
+				// Show heading only, then reveal button
+				const { NoteRenderer } = await import('../utils/noteRenderer');
+				await NoteRenderer.renderNoteContent(container, this.noteHeading, this.context.currentNote, this.context.app, this.context.plugin);
 
-			// Store reference for later use
-			(this as any).revealButton = revealButtonEl;
-			(this as any).contentContainer = container;
+				const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
+					this.revealNoteBody(container);
+				});
+
+				(this as any).revealButton = revealButtonEl;
+				(this as any).contentContainer = container;
+			}
 
 		} catch (error) {
 			console.error('Error rendering memorize content:', error);
-			container.createEl('div', { 
+			container.createEl('div', {
 				text: 'Could not load note content',
 				cls: 'note-preview-error'
 			});
@@ -61,46 +106,69 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		}
 	}
 
-	private async revealNoteBody(container: HTMLElement): Promise<void> {
+	private async renderFillInBlank(container: HTMLElement): Promise<void> {
+		const { NoteRenderer } = await import('../utils/noteRenderer');
+
+		// Show title with blank
+		await NoteRenderer.renderNoteContent(container, this.titleWithBlank, this.context.currentNote, this.context.app, this.context.plugin);
+
+		// Show body if it exists
+		if (this.noteBody) {
+			await NoteRenderer.renderNoteContent(container, this.noteBody, this.context.currentNote, this.context.app, this.context.plugin);
+		}
+
+		const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
+			this.revealFillInBlank(container);
+		});
+
+		(this as any).revealButton = revealButtonEl;
+		(this as any).contentContainer = container;
+	}
+
+	private async revealFillInBlank(container: HTMLElement): Promise<void> {
 		if (this.isBodyRevealed) return;
-		
+
 		this.isBodyRevealed = true;
-		
-		// Hide the reveal button
+
 		const revealButton = (this as any).revealButton;
 		if (revealButton) {
-			revealButton.style.display = 'none';
+			revealButton.remove();
 		}
 
-		// Show the note body
-		const bodyContainer = container.createEl('div');
-		bodyContainer.className = 'memorize-body';
-		bodyContainer.style.marginTop = '16px';
-		bodyContainer.style.marginBottom = '16px';
+		// Re-render with complete title
+		container.empty();
+		const { NoteRenderer } = await import('../utils/noteRenderer');
+		await NoteRenderer.renderNoteContent(container, this.originalTitle, this.context.currentNote, this.context.app, this.context.plugin);
 
 		if (this.noteBody) {
-			const { NoteRenderer } = await import('../utils/noteRenderer');
-			await NoteRenderer.renderNoteContent(bodyContainer, this.noteBody, this.context.currentNote, this.context.app, this.context.plugin);
-		} else {
-			bodyContainer.createEl('div', { 
-				text: 'No additional content in this note',
-				cls: 'note-preview-empty'
-			});
-			bodyContainer.style.fontStyle = 'italic';
-			bodyContainer.style.color = 'var(--text-muted)';
+			await NoteRenderer.renderNoteContent(container, this.noteBody, this.context.currentNote, this.context.app, this.context.plugin);
 		}
 
-		// Add spaced repetition buttons after the body
+		this.addSpacedRepetitionButtons(container);
+	}
+
+	private async revealNoteBody(container: HTMLElement): Promise<void> {
+		if (this.isBodyRevealed) return;
+
+		this.isBodyRevealed = true;
+
+		const revealButton = (this as any).revealButton;
+		if (revealButton) {
+			revealButton.remove();
+		}
+
+		// Show the full note content
+		if (this.noteBody) {
+			const { NoteRenderer } = await import('../utils/noteRenderer');
+			await NoteRenderer.renderNoteContent(container, this.noteBody, this.context.currentNote, this.context.app, this.context.plugin);
+		}
+
 		this.addSpacedRepetitionButtons(container);
 	}
 
 	private addSpacedRepetitionButtons(container: HTMLElement): void {
 		const srButtonContainer = container.createEl('div');
-		srButtonContainer.className = 'spaced-repetition-buttons';
-		srButtonContainer.style.display = 'flex';
-		srButtonContainer.style.gap = '8px';
-		srButtonContainer.style.marginTop = '16px';
-		srButtonContainer.style.justifyContent = 'center';
+		srButtonContainer.className = 'modal-button-row';
 
 		// Create the four spaced repetition buttons with standard Obsidian styling
 		this.context.createButton(srButtonContainer, 'Wrong', async () => {
@@ -131,5 +199,9 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		this.isBodyRevealed = false;
 		this.noteHeading = '';
 		this.noteBody = '';
+		this.isFillInBlank = false;
+		this.originalTitle = '';
+		this.titleWithBlank = '';
+		this.hiddenWord = '';
 	}
 }

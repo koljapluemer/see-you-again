@@ -92,8 +92,6 @@ export class AddContextModal extends BaseNoteModal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		// Header with title only
-		this.createHeader(this.currentNote.basename);
 
 		// Note preview
 		const previewContainer = contentEl.createEl('div');

@@ -322,3 +322,8 @@ See You Again Plugin Styles - All styles are namespaced to avoid conflicts
     padding-top: 20px;
     border-top: 1px solid var(--background-modifier-border);
 }
+
+/* Action Handler Content */
+.see-you-again-modal .action-content-section {
+    margin-bottom: 16px;
+}
