@@ -189,7 +189,7 @@ export class ContextBrowserModal extends Modal {
 		this.close();
 		
 		// Check if we should resume from a previous note
-		const lastContextNote = this.plugin.stateManager.get('lastContextNote');
+		this.plugin.stateManager.get('lastContextNote');
 		const lastContext = this.plugin.stateManager.get('lastContext');
 		
 		const noteViewerModal = new ContextNoteViewerModal(this.app, this.plugin, hydratedContext, sanitizedContext);

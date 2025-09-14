@@ -1,4 +1,4 @@
-import { TextComponent, DropdownComponent, Setting, App } from 'obsidian';
+import { TextComponent, Setting, App } from 'obsidian';
 import { ContextEntry, ActionType, ACTION_OPTIONS } from '../types';
 import { ContextInputSuggest } from './contextSuggest';
 
@@ -31,9 +31,8 @@ export class ContextFieldManager {
 		const rowContainer = document.createElement('div');
 		
 		let textComponent: TextComponent;
-		let dropdownComponent: DropdownComponent;
 
-		const setting = new Setting(rowContainer)
+		new Setting(rowContainer)
 			.addText((text) => {
 				textComponent = text;
 				text.setPlaceholder(`Context ${index + 1}`);
@@ -49,7 +48,6 @@ export class ContextFieldManager {
 				});
 			})
 			.addDropdown((dropdown) => {
-				dropdownComponent = dropdown;
 				ACTION_OPTIONS.forEach(option => {
 					dropdown.addOption(option.value, option.label);
 				});

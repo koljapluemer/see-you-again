@@ -8,14 +8,11 @@ import { SeeYouAgainSettingTab } from './settings';
 import { StateManager } from './state/stateManager';
 
 export class SeeYouAgainPlugin extends Plugin {
-	settings: SeeYouAgainSettings;
-	stateManager: StateManager;
+	settings: SeeYouAgainSettings = DEFAULT_SETTINGS;
+	stateManager: StateManager = new StateManager();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
-
-		// Initialize state manager
-		this.stateManager = new StateManager();
 
 		// Add command to open the Add Context modal
 		this.addCommand({
@@ -54,7 +51,7 @@ export class SeeYouAgainPlugin extends Plugin {
 		});
 
 		// Add sidebar button for managing contexts
-		this.addRibbonIcon('tags', 'Manage contexts for current note', (evt: MouseEvent) => {
+		this.addRibbonIcon('tags', 'Manage contexts for current note', () => {
 			new CurrentNoteContextModal(this.app, this).open();
 		});
 

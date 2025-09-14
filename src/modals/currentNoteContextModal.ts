@@ -1,6 +1,6 @@
-import { App, TFile, Notice, MarkdownView, ButtonComponent } from 'obsidian';
+import { App, Notice, MarkdownView, ButtonComponent } from 'obsidian';
 import { NoteService } from '../noteService';
-import { SeeYouAgainPlugin, ActionType, ContextEntry, ACTION_OPTIONS } from '../types';
+import { SeeYouAgainPlugin, ActionType, ACTION_OPTIONS } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextFieldManager } from '../components/modalComponents';
 import { ContextUtils } from '../utils/contextUtils';
@@ -97,10 +97,7 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		this.contextFieldManager = new ContextFieldManager(
 			this.app,
 			fieldsContainer,
-			(entries) => {
-				// This callback is called when entries change
-				// We don't need to do anything here since we handle saving on button click
-			}
+			() => { /* no-op */ }
 		);
 
 		// Load past contexts for autocomplete

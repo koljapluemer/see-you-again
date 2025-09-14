@@ -1,7 +1,7 @@
 import { App, TFile, Notice } from 'obsidian';
 import { NoteService } from '../noteService';
 import { ContextFieldManager } from '../components/modalComponents';
-import { ContextEntry, SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
+import { SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextUtils } from '../utils/contextUtils';
 
@@ -103,7 +103,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 		fieldsContainer.className = 'modal-fields-container';
 
 		// Initialize field manager
-		this.contextFieldManager = new ContextFieldManager(this.app, fieldsContainer, (entries: ContextEntry[]) => {
+		this.contextFieldManager = new ContextFieldManager(this.app, fieldsContainer, () => {
 			this.updateButtonStates();
 		});
 

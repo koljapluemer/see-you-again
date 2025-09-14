@@ -136,7 +136,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 			}
 
 			// Show success message
-			const notice = new Notice(`Reset ${resetCount} notes. All notes are now available for processing again.`);
+			new Notice(`Reset ${resetCount} notes. All notes are now available for processing again.`);
 
 		} catch (error) {
 			console.error('Error resetting notes:', error);

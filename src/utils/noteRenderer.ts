@@ -27,11 +27,11 @@ export class NoteRenderer {
 	 * Render markdown content using Obsidian's renderer with proper MarkdownRenderChild
 	 */
 	static renderMarkdown(
-		content: string, 
-		container: HTMLElement, 
+		content: string,
+		container: HTMLElement,
 		currentNote: TFile | null,
 		app: App,
-		plugin: Plugin
+		_plugin: Plugin
 	): void {
 		// Create a MarkdownRenderChild for proper rendering and component lifecycle
 		const renderChild = new MarkdownRenderChild(container);

@@ -1,4 +1,3 @@
-import { ButtonComponent } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
 import { FSRSService } from '../services/fsrsService';
 import { Grade, Card } from 'ts-fsrs';
@@ -11,11 +10,10 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	private isFillInBlank: boolean = false;
 	private originalTitle: string = '';
 	private titleWithBlank: string = '';
-	private hiddenWord: string = '';
 	private hasPartialReveal: boolean = false;
 	private contentBeforeSeparator: string = '';
 	private fullContent: string = '';
-	private fsrsService: FSRSService | null = null;
+	private fsrsService: FSRSService | undefined;
 	private currentCard: Card | null = null;
 
 	async initialize(): Promise<void> {
@@ -112,7 +110,6 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 		// Choose a random eligible word to hide
 		const randomEligibleWord = eligibleWords[Math.floor(Math.random() * eligibleWords.length)];
-		this.hiddenWord = randomEligibleWord;
 
 		// Find the index of this word in the original words array and replace it
 		const wordIndex = words.indexOf(randomEligibleWord);
@@ -326,7 +323,6 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		this.isFillInBlank = false;
 		this.originalTitle = '';
 		this.titleWithBlank = '';
-		this.hiddenWord = '';
 		this.hasPartialReveal = false;
 		this.contentBeforeSeparator = '';
 		this.fullContent = '';

@@ -48,7 +48,7 @@ export class ActionTypeScheduler {
    */
   static calculateActionTypeStats(actionTypeUsage: Record<ActionType, number>): ActionTypeStats[] {
     const totalActualUsage = Object.values(actionTypeUsage).reduce((sum, count) => sum + count, 0);
-    const totalExpectedWeight = ActionTypeWeightsConfig.getTotalWeight();
+    ActionTypeWeightsConfig.getTotalWeight();
     
     // If no notes have been processed yet, all action types are equally underpicked
     // Return them sorted by weight (highest weight first)

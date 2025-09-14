@@ -1,4 +1,3 @@
-import { ButtonComponent } from 'obsidian';
 import { BaseActionHandler } from './baseActionHandler';
 
 export class EvaluateActionHandler extends BaseActionHandler {
@@ -18,7 +17,7 @@ export class EvaluateActionHandler extends BaseActionHandler {
 		evaluationContainer.className = 'evaluation-container';
 		evaluationContainer.style.marginTop = '20px';
 
-		const label = evaluationContainer.createEl('label', { text: 'Your evaluation:' });
+		evaluationContainer.createEl('label', { text: 'Your evaluation:' });
 
 		this.textArea = evaluationContainer.createEl('textarea');
 		this.textArea.placeholder = 'Write your evaluation here...';

@@ -1,4 +1,4 @@
-import { App, TFile, Notice, ButtonComponent } from 'obsidian';
+import { App, TFile, ButtonComponent } from 'obsidian';
 import { NoteService } from '../noteService';
 import { SeeYouAgainPlugin, ActionType } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';

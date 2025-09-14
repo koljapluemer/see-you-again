@@ -74,8 +74,9 @@ export class FSRSService {
 			const frontmatter = await this.noteService.getFrontmatter(note);
 			const cardData = frontmatter['see-you-again-learning-data'];
 
-			if (cardData && typeof cardData === 'object' && 'due' in cardData && cardData.due) {
-				return new Date(cardData.due as string);
+			if (cardData && typeof cardData === 'object' && 'due' in cardData) {
+				const typedCardData = cardData as { due: string };
+				return new Date(typedCardData.due);
 			}
 		} catch (error) {
 			console.warn(`Failed to get due date for ${note.name}:`, error);
