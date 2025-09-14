@@ -112,26 +112,9 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 			return { context: hydratedContext, action };
 		});
 
-		// If we have existing entries, we need to work around the private API
+		// Set the entries using the clean API
 		if (existingEntries.length > 0) {
-			// Reset to clear default entries
-			this.contextFieldManager.reset();
-			
-			// Type-safe workaround: Add a public method to ContextFieldManager instead
-			// For now, we'll add entries manually by simulating user input
-			existingEntries.forEach((entry, index) => {
-				// This is a temporary solution - ideally ContextFieldManager should have a setEntries method
-				if (index === 0) {
-					// Replace first default entry
-					(this.contextFieldManager as unknown as { entries: Array<{ context: string; action: string }> }).entries[0] = entry;
-				} else {
-					// Add additional entries
-					(this.contextFieldManager as unknown as { entries: Array<{ context: string; action: string }> }).entries.push(entry);
-				}
-			});
-			
-			// Re-render to show the entries
-			(this.contextFieldManager as unknown as { render(): void }).render();
+			this.contextFieldManager.setEntries(existingEntries);
 		}
 	}
 

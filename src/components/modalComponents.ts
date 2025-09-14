@@ -134,6 +134,15 @@ export class ContextFieldManager {
 		}
 	}
 
+	setEntries(entries: ContextEntry[]): void {
+		this.entries = [...entries];
+		// Ensure we always have at least one empty field at the end
+		if (this.entries.length === 0 || this.entries[this.entries.length - 1].context.trim() !== '') {
+			this.entries.push({ context: '', action: 'look-at' });
+		}
+		this.render();
+	}
+
 	reset(): void {
 		this.entries = [
 			{ context: '', action: 'look-at' },

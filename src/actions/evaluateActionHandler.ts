@@ -1,4 +1,5 @@
 import { Setting } from 'obsidian';
+
 import { BaseActionHandler } from './baseActionHandler';
 
 export class EvaluateActionHandler extends BaseActionHandler {
