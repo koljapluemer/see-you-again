@@ -66,7 +66,8 @@ export class SeeYouAgainPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const loadedData: unknown = await this.loadData();
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData as Partial<SeeYouAgainSettings>);
 	}
 
 	async saveSettings(): Promise<void> {

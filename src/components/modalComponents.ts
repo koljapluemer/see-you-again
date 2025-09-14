@@ -1,4 +1,4 @@
-import type { TextComponent, App } from 'obsidian';
+import type { App } from 'obsidian';
 import { Setting } from 'obsidian';
 
 import type { ContextEntry, ActionType} from '../types';
@@ -32,12 +32,9 @@ export class ContextFieldManager {
 
 	private createFieldRow(entry: ContextEntry, index: number): HTMLElement {
 		const rowContainer = document.createElement('div');
-		
-		let textComponent: TextComponent;
 
 		new Setting(rowContainer)
 			.addText((text) => {
-				textComponent = text;
 				text.setPlaceholder(`Context ${index + 1}`);
 				text.setValue(entry.context);
 				text.onChange((value) => {
@@ -49,6 +46,19 @@ export class ContextFieldManager {
 						this.addNewField();
 					}
 				});
+
+				// Create native suggestions for the text input
+				const suggestions = new ContextInputSuggest(
+					this.app,
+					text.inputEl, 
+					this.pastContexts, 
+					(selectedValue) => {
+						this.entries[index].context = selectedValue;
+						text.setValue(selectedValue);
+						this.onChangeCallback(this.entries);
+					}
+				);
+				this.suggestInstances[index] = suggestions;
 			})
 			.addDropdown((dropdown) => {
 				ACTION_OPTIONS.forEach(option => {
@@ -61,18 +71,8 @@ export class ContextFieldManager {
 				});
 			});
 
-		// Create native suggestions for the text input after textComponent is assigned
-		const suggestions = new ContextInputSuggest(
-			this.app,
-			textComponent!.inputEl, 
-			this.pastContexts, 
-			(selectedValue) => {
-				this.entries[index].context = selectedValue;
-				textComponent!.setValue(selectedValue);
-				this.onChangeCallback(this.entries);
-			}
-		);
-		this.suggestInstances[index] = suggestions;
+		// Create native suggestions for the text input (moved inside addText callback)
+		// This is now handled inside the addText callback above
 
 		return rowContainer;
 	}
@@ -107,10 +107,21 @@ export class ContextFieldManager {
 		this.pastContexts = contexts;
 		// Update all existing suggest instances
 		this.suggestInstances.forEach(instance => {
-			if (instance) {
+			if (instance !== null && instance !== undefined) {
 				instance.updateSuggestions(contexts);
 			}
 		});
+	}
+
+	addEntry(context: string, action: ActionType): void {
+		// Find empty entry or add new one
+		const emptyIndex = this.entries.findIndex(entry => entry.context.trim() === '');
+		if (emptyIndex >= 0) {
+			this.entries[emptyIndex] = { context, action };
+		} else {
+			this.entries.push({ context, action });
+		}
+		this.render();
 	}
 
 	reset(): void {

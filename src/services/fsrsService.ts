@@ -17,13 +17,14 @@ export class FSRSService {
 	 */
 	async loadCard(note: TFile): Promise<Card> {
 		try {
-			const frontmatter = await this.noteService.getFrontmatter(note);
+			const frontmatter = this.noteService.getFrontmatter(note);
 			const cardData = frontmatter['see-you-again-learning-data'];
 
 			if (cardData && this.isValidCardData(cardData)) {
-				return this.deserializeCard(cardData);
+				return this.deserializeCard(cardData as unknown as Record<string, unknown>);
 			}
 		} catch (error) {
+			// If frontmatter access fails, fall through to empty card
 		}
 
 		// Return empty card if no valid data exists
@@ -34,7 +35,7 @@ export class FSRSService {
 	 * Save FSRS card data to note frontmatter
 	 */
 	async saveCard(note: TFile, card: Card): Promise<void> {
-		const cardData = this.serializeCard(card);
+		const cardData: unknown = this.serializeCard(card);
 		await this.noteService.setFrontmatterProperty(note, 'see-you-again-learning-data', cardData);
 	}
 
@@ -57,9 +58,9 @@ export class FSRSService {
 	/**
 	 * Check if a note has FSRS data (is not unseen)
 	 */
-	async hasCardData(note: TFile): Promise<boolean> {
+	hasCardData(note: TFile): boolean {
 		try {
-			const frontmatter = await this.noteService.getFrontmatter(note);
+			const frontmatter = this.noteService.getFrontmatter(note);
 			const cardData = frontmatter['see-you-again-learning-data'];
 			return cardData && this.isValidCardData(cardData);
 		} catch (error) {
@@ -70,9 +71,9 @@ export class FSRSService {
 	/**
 	 * Get due date from card data without fully deserializing
 	 */
-	async getCardDueDate(note: TFile): Promise<Date | null> {
+	getCardDueDate(note: TFile): Date | null {
 		try {
-			const frontmatter = await this.noteService.getFrontmatter(note);
+			const frontmatter = this.noteService.getFrontmatter(note);
 			const cardData = frontmatter['see-you-again-learning-data'];
 
 			if (cardData && typeof cardData === 'object' && 'due' in cardData) {
@@ -80,12 +81,13 @@ export class FSRSService {
 				return new Date(typedCardData.due);
 			}
 		} catch (error) {
+			// Failed to get card due date
 		}
 
 		return null;
 	}
 
-	private serializeCard(card: Card): any {
+	private serializeCard(card: Card): Record<string, unknown> {
 		return {
 			...card,
 			due: card.due.toISOString(),
@@ -93,23 +95,26 @@ export class FSRSService {
 		};
 	}
 
-	private deserializeCard(data: any): Card {
+	private deserializeCard(data: Record<string, unknown>): Card {
 		return {
 			...data,
-			due: new Date(data.due),
-			last_review: data.last_review ? new Date(data.last_review) : undefined
-		};
+			due: new Date(data.due as string),
+			last_review: (data.last_review !== null && data.last_review !== undefined) ? new Date(data.last_review as string) : undefined
+		} as Card;
 	}
 
-	private isValidCardData(data: any): boolean {
-		return data &&
-			typeof data.due === 'string' &&
-			typeof data.stability === 'number' &&
-			typeof data.difficulty === 'number' &&
-			typeof data.elapsed_days === 'number' &&
-			typeof data.scheduled_days === 'number' &&
-			typeof data.reps === 'number' &&
-			typeof data.lapses === 'number' &&
-			typeof data.state === 'number';
+	private isValidCardData(data: unknown): boolean {
+		if (data === null || data === undefined || typeof data !== 'object') {
+			return false;
+		}
+		const obj = data as Record<string, unknown>;
+		return typeof obj.due === 'string' &&
+			typeof obj.stability === 'number' &&
+			typeof obj.difficulty === 'number' &&
+			typeof obj.elapsed_days === 'number' &&
+			typeof obj.scheduled_days === 'number' &&
+			typeof obj.reps === 'number' &&
+			typeof obj.lapses === 'number' &&
+			typeof obj.state === 'number';
 	}
 }

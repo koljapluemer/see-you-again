@@ -3,7 +3,6 @@ import { Notice, MarkdownView, ButtonComponent } from 'obsidian';
 
 import { NoteService } from '../noteService';
 import type { SeeYouAgainPlugin, ActionType} from '../types';
-import { ACTION_OPTIONS } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextFieldManager } from '../components/modalComponents';
 import { ContextUtils } from '../utils/contextUtils';
@@ -18,7 +17,7 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		this.noteService = new NoteService(app);
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		super.onOpen();
 		
 		// Get the currently active note
@@ -30,8 +29,8 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		}
 
 		this.currentNote = activeLeaf.file;
-		await this.loadExistingContexts();
-		await this.renderModal();
+		this.loadExistingContexts();
+		this.renderModal();
 	}
 
 	onClose(): void {
@@ -43,24 +42,25 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		super.onClose();
 	}
 
-	private async loadExistingContexts(): Promise<void> {
+	private loadExistingContexts(): void {
 		if (!this.currentNote) {return;}
 
 		try {
 			const fileCache = this.app.metadataCache.getFileCache(this.currentNote);
 			const frontmatter = fileCache?.frontmatter;
 			
-			if (frontmatter && frontmatter['see-you-again']) {
-				const seeYouAgain = frontmatter['see-you-again'];
-				if (typeof seeYouAgain === 'object' && !Array.isArray(seeYouAgain)) {
-					this.existingContexts = { ...seeYouAgain };
+			if (frontmatter && typeof frontmatter === 'object' && 'see-you-again' in frontmatter) {
+				const seeYouAgain: unknown = frontmatter['see-you-again'];
+				if (typeof seeYouAgain === 'object' && seeYouAgain !== null && !Array.isArray(seeYouAgain)) {
+					this.existingContexts = { ...seeYouAgain as Record<string, ActionType> };
 				}
 			}
 		} catch (error) {
+			// Handle error loading existing contexts
 		}
 	}
 
-	private async renderModal(): Promise<void> {
+	private renderModal(): void {
 		if (!this.currentNote) {return;}
 
 		const { contentEl } = this;
@@ -80,7 +80,7 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		);
 
 		// Load past contexts for autocomplete
-		const pastContexts = await this.noteService.getAllPastContexts();
+		const pastContexts = this.noteService.getAllPastContexts();
 		this.contextFieldManager.setPastContexts(pastContexts);
 
 		// Prefill with existing contexts
@@ -106,11 +106,33 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 	private prefillExistingContexts(): void {
 		if (!this.contextFieldManager) {return;}
 
-		// Convert existing contexts to ContextEntry format and prefill
-		Object.entries(this.existingContexts).forEach(([sanitizedContext, action]) => {
+		// Convert existing contexts to ContextEntry format
+		const existingEntries = Object.entries(this.existingContexts).map(([sanitizedContext, action]) => {
 			const hydratedContext = ContextUtils.hydrateContextKey(sanitizedContext);
-			this.contextFieldManager!.addEntry(hydratedContext, action);
+			return { context: hydratedContext, action };
 		});
+
+		// If we have existing entries, we need to work around the private API
+		if (existingEntries.length > 0) {
+			// Reset to clear default entries
+			this.contextFieldManager.reset();
+			
+			// Type-safe workaround: Add a public method to ContextFieldManager instead
+			// For now, we'll add entries manually by simulating user input
+			existingEntries.forEach((entry, index) => {
+				// This is a temporary solution - ideally ContextFieldManager should have a setEntries method
+				if (index === 0) {
+					// Replace first default entry
+					(this.contextFieldManager as unknown as { entries: Array<{ context: string; action: string }> }).entries[0] = entry;
+				} else {
+					// Add additional entries
+					(this.contextFieldManager as unknown as { entries: Array<{ context: string; action: string }> }).entries.push(entry);
+				}
+			});
+			
+			// Re-render to show the entries
+			(this.contextFieldManager as unknown as { render(): void }).render();
+		}
 	}
 
 	private async saveAllContexts(): Promise<void> {

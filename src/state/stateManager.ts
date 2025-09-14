@@ -75,7 +75,8 @@ export class StateManager {
       const typedKey = key as keyof PluginState;
       const oldValue = this.state[typedKey];
       if (oldValue !== value) {
-        (this.state as Record<string, unknown>)[typedKey] = value;
+        // Type-safe assignment using object property access
+        this.state = { ...this.state, [typedKey]: value };
         changes.push({ key: typedKey, newValue: value, oldValue });
       }
     }
@@ -98,18 +99,18 @@ export class StateManager {
     if (!this.listeners.has(key)) {
       this.listeners.set(key, new Set());
     }
-    this.listeners.get(key)?.add(listener) ?? (() => {
-      const listenerSet = new Set<StateListener>();
-      listenerSet.add(listener);
+    this.listeners.get(key)?.add(listener as StateListener<unknown>) ?? ((): void => {
+      const listenerSet = new Set<StateListener<unknown>>();
+      listenerSet.add(listener as StateListener<unknown>);
       this.listeners.set(key, listenerSet);
     })();
     
-    return () => this.unsubscribe(key, listener);
+    return () => this.unsubscribe(key, listener as StateListener<unknown>);
   }
   
   private unsubscribe<K extends keyof PluginState>(
     key: K | 'any', 
-    listener: StateListener
+    listener: StateListener<unknown>
   ): void {
     this.listeners.get(key)?.delete(listener);
   }
@@ -122,8 +123,9 @@ export class StateManager {
     this.listeners.get(key)?.forEach(listener => {
       try {
         listener(newValue, oldValue);
-      } catch (error) {
-      }
+		} catch (error) {
+			// Silently handle listener errors
+		}
     });
   }
   

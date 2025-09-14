@@ -1,4 +1,4 @@
-import type { App} from 'obsidian';
+import type { App } from 'obsidian';
 import { TFile, ButtonComponent } from 'obsidian';
 
 import { NoteService } from '../noteService';
@@ -17,7 +17,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	private currentActionHandler: ActionHandler | null = null;
 
 	constructor(
-		app: App, 
+		app: App,
 		plugin: SeeYouAgainPlugin,
 		hydratedContext: string,
 		sanitizedContext: string
@@ -31,27 +31,27 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	async onOpen(): Promise<void> {
 		// Check if we should resume from a specific note
 		const resumeNotePath = this.plugin.stateManager.get('lastContextNote');
-		if (resumeNotePath) {
+		if (resumeNotePath !== null && resumeNotePath !== undefined && resumeNotePath !== '') {
 			// Try to load the specific note
 			const file = this.app.vault.getAbstractFileByPath(resumeNotePath);
 			if (file instanceof TFile) {
 				this.currentNote = file;
-				
+
 				// Get the action type from frontmatter for resume case
-				const frontmatter = await this.noteService.getFrontmatter(file);
+				const frontmatter = this.noteService.getFrontmatter(file);
 				this.currentActionType = frontmatter[this.sanitizedContext];
-				
+
 				if (this.currentActionType) {
 					// Track the resumed action type
 					this.plugin.stateManager.incrementActionTypeUsage(this.currentActionType);
 				}
-				
+
 				await this.loadActionType();
 				await this.renderModal();
 				return;
 			}
 		}
-		
+
 		// Otherwise load a random note
 		await this.loadRandomNote();
 	}
@@ -69,21 +69,15 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			// Get the most underpicked action type based on current session usage
 			const actionTypeUsage = this.plugin.stateManager.getActionTypeUsage();
 			const preferredActionType = ActionTypeScheduler.getMostUnderpickedActionType(actionTypeUsage);
-			
-				context: this.sanitizedContext,
-				preferredActionType,
-				currentUsage: actionTypeUsage
-			});
-			
-			// Log current usage summary
-				ActionTypeScheduler.getUsageSummary(actionTypeUsage));
+
+			// Action type scheduling with preferred type selection
 
 			// Try to get a note with the preferred action type
-			const result = await this.noteService.getRandomNoteWithContextPrioritized(
-				this.sanitizedContext, 
+			const result = this.noteService.getRandomNoteWithContextPrioritized(
+				this.sanitizedContext,
 				preferredActionType
 			);
-			
+
 			if (!result) {
 				this.showNoNotesMessage();
 				return;
@@ -91,10 +85,10 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 
 			this.currentNote = result.file;
 			this.currentActionType = result.actionType;
-			
+
 			// Track that this action type was used
 			this.plugin.stateManager.incrementActionTypeUsage(result.actionType);
-			
+
 
 			await this.loadActionType();
 			await this.renderModal();
@@ -114,7 +108,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			if (this.currentActionHandler && this.currentActionHandler.cleanup) {
 				this.currentActionHandler.cleanup();
 			}
-			
+
 			// Create action handler context
 			const context: ActionHandlerContext = {
 				app: this.app,
@@ -147,25 +141,25 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	private showNoNotesMessage(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		
+
 		const header = contentEl.createEl('div');
 		header.className = 'context-note-viewer-no-notes';
-		
+
 		header.createEl('h2', { text: 'No Notes Found' });
-		header.createEl('p', { 
-			text: `No notes found with the context "${this.hydratedContext}".` 
+		header.createEl('p', {
+			text: `No notes found with the context "${this.hydratedContext}".`
 		});
-		
+
 		// Button row
 		const buttonContainer = contentEl.createEl('div');
 		buttonContainer.className = 'modal-button-row';
-		
+
 		const closeButton = this.createStyledButton('Close', () => this.close());
 		buttonContainer.appendChild(closeButton);
 	}
 
 	private async renderModal(): Promise<void> {
-		if (!this.currentNote || !this.currentActionHandler) {return;}
+		if (!this.currentNote || !this.currentActionHandler) { return; }
 
 		const { contentEl } = this;
 		contentEl.empty();
@@ -174,11 +168,8 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		try {
 			await this.noteService.markNoteSeen(this.currentNote);
 		} catch (error) {
-		}
-
-		// Note title (only for non-memorize actions, memorize handles its own heading)
-		if (this.currentActionType !== 'memorize') {
-			this.createHeader(this.currentNote.basename);
+			console.error('Failed to mark note as seen:', error);
+			// Continue rendering even if marking as seen fails
 		}
 
 		// Action-specific prompt
@@ -192,17 +183,21 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		promptLabel.style.marginBottom = '16px';
 		promptLabel.style.textAlign = 'center';
 
+		// Note title (only for non-memorize actions, memorize handles its own heading)
+		if (this.currentActionType !== 'memorize') {
+			this.createHeader(this.currentNote.basename);
+		}
 
 		// Note content (handled by action handler)
 		const previewContainer = contentEl.createEl('div');
 		previewContainer.className = 'context-note-viewer-preview';
-		
+
 		await this.currentActionHandler.renderNoteContent(previewContainer);
 
 		// Buttons (handled by action handler)
 		const buttonContainer = contentEl.createEl('div');
 		buttonContainer.className = 'modal-button-row';
-		
+
 		this.currentActionHandler.createButtons(buttonContainer);
 	}
 
@@ -213,7 +208,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	private changeContext(): void {
 		// Clear stored state since user wants to change context
 		this.plugin.stateManager.clearNavigationState();
-		
+
 		// Close this modal and open the context browser
 		this.close();
 		const contextBrowserModal = new ContextBrowserModal(this.app, this.plugin);
@@ -221,7 +216,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async jumpToNote(): Promise<void> {
-		if (!this.currentNote) {return;}
+		if (!this.currentNote) { return; }
 
 		try {
 			// Store transient state in state manager
@@ -233,10 +228,10 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			// Open the note in the active leaf (same tab)  
 			const leaf = this.app.workspace.getLeaf(false);
 			await leaf.openFile(this.currentNote);
-			
+
 			// Focus the leaf
 			this.app.workspace.setActiveLeaf(leaf);
-			
+
 			// Close the modal
 			this.close();
 		} catch (error) {
@@ -245,7 +240,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async removeContext(): Promise<void> {
-		if (!this.currentNote) {return;}
+		if (!this.currentNote) { return; }
 
 		try {
 			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
@@ -256,7 +251,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async removeContextAndArchive(): Promise<void> {
-		if (!this.currentNote) {return;}
+		if (!this.currentNote) { return; }
 
 		try {
 			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
@@ -268,11 +263,11 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async deleteNote(): Promise<void> {
-		if (!this.currentNote) {return;}
+		if (!this.currentNote) { return; }
 
 		// Confirm deletion
 		const confirmed = confirm(`Are you sure you want to delete the note "${this.currentNote.basename}"? This cannot be undone.`);
-		if (!confirmed) {return;}
+		if (!confirmed) { return; }
 
 		try {
 			await this.noteService.deleteNote(this.currentNote);

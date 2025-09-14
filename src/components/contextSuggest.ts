@@ -13,7 +13,7 @@ export class ContextInputSuggest extends AbstractInputSuggest<string> {
 	) {
 		super(app, inputEl);
 		this.pastContexts = pastContexts;
-		this.onSelectCallback = onSelect || (() => {});
+		this.onSelectCallback = onSelect || ((): void => { /* no-op */ });
 	}
 
 	getSuggestions(query: string): string[] {

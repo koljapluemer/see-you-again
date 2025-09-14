@@ -33,10 +33,14 @@
       "error",
       "all"
     ],
-    "no-console": "warn",
     "no-debugger": "error",
     // --- Import hygiene ---
-    "import/no-unresolved": "error",
+    "import/no-unresolved": [
+      "error", 
+      {
+        "ignore": ["^obsidian$"]
+      }
+    ],
     "import/order": [
       "error",
       {

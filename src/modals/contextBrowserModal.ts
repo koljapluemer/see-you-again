@@ -24,7 +24,7 @@ export class ContextBrowserModal extends Modal {
 		this.noteService = new NoteService(app);
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		// Add our namespace class to the modal
 		this.containerEl.addClass('see-you-again-modal');
 		
@@ -32,7 +32,7 @@ export class ContextBrowserModal extends Modal {
 		const lastContextNote = this.plugin.stateManager.get('lastContextNote');
 		const lastContext = this.plugin.stateManager.get('lastContext');
 		
-		if (lastContext && lastContextNote) {
+		if (lastContext !== null && lastContext !== undefined && lastContextNote !== null && lastContextNote !== undefined) {
 			// Skip the browser and go directly to the note viewer
 			this.close();
 			
@@ -42,7 +42,7 @@ export class ContextBrowserModal extends Modal {
 			return;
 		}
 		
-		await this.loadContexts();
+		this.loadContexts();
 		this.renderModal();
 	}
 
@@ -51,9 +51,9 @@ export class ContextBrowserModal extends Modal {
 		contentEl.empty();
 	}
 
-	private async loadContexts(): Promise<void> {
+	private loadContexts(): void {
 		try {
-			this.allContexts = await this.noteService.getAllPastContexts();
+			this.allContexts = this.noteService.getAllPastContexts();
 			this.filteredContexts = [...this.allContexts];
 		} catch (error) {
 			new Notice('Error loading contexts. Please try again.');
@@ -130,7 +130,10 @@ export class ContextBrowserModal extends Modal {
 		const pageContexts = this.filteredContexts.slice(startIndex, endIndex);
 
 		pageContexts.forEach(context => {
-			const contextItem = this.contextList!.createEl('div');
+			if (this.contextList === null) {
+				return;
+			}
+			const contextItem = this.contextList.createEl('div');
 			contextItem.className = 'context-browser-item';
 
 			contextItem.textContent = context;

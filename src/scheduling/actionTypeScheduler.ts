@@ -26,18 +26,7 @@ export class ActionTypeScheduler {
     
     const mostUnderpicked = stats[0];
     
-    // Log the scheduling decision
-      selected: mostUnderpicked.actionType,
-      deficitRatio: mostUnderpicked.deficitRatio.toFixed(2),
-      actual: `${mostUnderpicked.actualCount} (${mostUnderpicked.actualPercentage.toFixed(1)}%)`,
-      expected: `${mostUnderpicked.expectedCount} (${mostUnderpicked.expectedPercentage.toFixed(1)}%)`,
-      allStats: stats.map(s => ({
-        type: s.actionType,
-        deficit: s.deficitRatio.toFixed(2),
-        actual: s.actualCount,
-        expected: s.expectedCount
-      }))
-    });
+    // Action type selected based on deficit ratio analysis
     
     return mostUnderpicked.actionType;
   }

@@ -23,7 +23,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 			.setName('Archive Folder')
 			.setDesc('Folder where notes will be moved when using "Remove Context and Archive"')
 			.addSearch(search => {
-				const saveFolder = async (value: string) => {
+				const saveFolder = async (value: string): Promise<void> => {
 					// Trim folder and Strip ending slash if there
 					let newFolder = value.trim();
 					newFolder = newFolder.replace(/\/$/, "");
@@ -31,14 +31,16 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				};
 
-				new FolderSuggest(this.app, search.inputEl, saveFolder);
+				new FolderSuggest(this.app, search.inputEl, (value: string) => {
+					saveFolder(value).catch(error => console.error('Folder save failed:', error));
+				});
 				search
 					.setPlaceholder('Archive')
 					.setValue(this.plugin.settings.archiveFolder);
 				
 				// Save on blur (for manual typing)
-				search.inputEl.addEventListener('blur', async () => {
-					await saveFolder(search.inputEl.value);
+				search.inputEl.addEventListener('blur', () => {
+					saveFolder(search.inputEl.value).catch(error => console.error('Save folder failed:', error));
 				});
 			});
 
@@ -69,7 +71,7 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 		this.calculateAndDisplayStats(statsContainer);
 	}
 
-	private async calculateAndDisplayStats(container: HTMLElement): Promise<void> {
+	private calculateAndDisplayStats(container: HTMLElement): void {
 		try {
 			const allFiles = this.app.vault.getMarkdownFiles();
 			let processedCount = 0;
@@ -79,12 +81,12 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 				const fileCache = this.app.metadataCache.getFileCache(file);
 				const frontmatter = fileCache?.frontmatter;
 				
-				if (frontmatter && frontmatter['see-you-again']) {
-					const seeYouAgain = frontmatter['see-you-again'];
+				if (frontmatter && typeof frontmatter === 'object' && 'see-you-again' in frontmatter) {
+					const seeYouAgain: unknown = frontmatter['see-you-again'];
 					// Check if it has actual content (not empty array/object)
 					if (Array.isArray(seeYouAgain) && seeYouAgain.length > 0) {
 						processedCount++;
-					} else if (typeof seeYouAgain === 'object' && Object.keys(seeYouAgain).length > 0) {
+					} else if (typeof seeYouAgain === 'object' && seeYouAgain !== null && Object.keys(seeYouAgain).length > 0) {
 						processedCount++;
 					} else {
 						// Empty array/object counts as excluded, not processed
@@ -117,8 +119,8 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 				const fileCache = this.app.metadataCache.getFileCache(file);
 				const frontmatter = fileCache?.frontmatter;
 				
-				if (frontmatter && frontmatter['see-you-again']) {
-					await this.app.fileManager.processFrontMatter(file, (fm) => {
+				if (frontmatter && typeof frontmatter === 'object' && 'see-you-again' in frontmatter) {
+					await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 						delete fm['see-you-again'];
 					});
 					resetCount++;
@@ -132,8 +134,8 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 
 			// Refresh the stats display
 			const statsContainer = this.containerEl.querySelector('.see-you-again-stats-container') as HTMLElement;
-			if (statsContainer) {
-				await this.calculateAndDisplayStats(statsContainer);
+			if (statsContainer !== null) {
+				this.calculateAndDisplayStats(statsContainer);
 			}
 
 			// Show success message

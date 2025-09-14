@@ -23,9 +23,9 @@ export class BatchAddContextModal extends BaseNoteModal {
 		this.noteService = new NoteService(app);
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		super.onOpen(); // This applies the see-you-again-modal class
-		await this.loadSearchResults();
+		this.loadSearchResults();
 	}
 
 	onClose(): void {
@@ -36,24 +36,24 @@ export class BatchAddContextModal extends BaseNoteModal {
 		super.onClose();
 	}
 
-	private async loadSearchResults(): Promise<void> {
+	private loadSearchResults(): void {
 		try {
-			// Get search results from the search view
-			const searchLeaf = this.app.workspace.getLeavesOfType('search')[0];
-			if (!searchLeaf || !searchLeaf.view) {
-				this.showNoSearchMessage('The core search plugin is not enabled');
-				return;
-			}
-			const searchView = searchLeaf.view as unknown as SearchView;
-			
-			if (!searchView) {
+		// Get search results from the search view
+		const searchLeaf = this.app.workspace.getLeavesOfType('search')[0];
+		if (searchLeaf === undefined || searchLeaf.view === undefined) {
+			this.showNoSearchMessage('The core search plugin is not enabled');
+			return;
+		}
+		const searchView = searchLeaf.view as unknown as SearchView;
+		
+		if (searchView === undefined) {
 				this.showNoSearchMessage('The core search plugin is not enabled');
 				return;
 			}
 
 			const searchResults = searchView.dom.getFiles();
 			
-			if (!searchResults || searchResults.length === 0) {
+			if (searchResults === undefined || searchResults === null || searchResults.length === 0) {
 				this.showNoSearchMessage('No search results available');
 				return;
 			}
@@ -66,7 +66,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 				return;
 			}
 
-			await this.renderModal();
+			this.renderModal();
 		} catch (error) {
 			this.showError('Error loading search results. Please try again.');
 		}
@@ -85,7 +85,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 		buttonContainer.appendChild(closeButton);
 	}
 
-	private async renderModal(): Promise<void> {
+	private renderModal(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -117,8 +117,12 @@ export class BatchAddContextModal extends BaseNoteModal {
 
 		// Create buttons directly in the row
 		const cancelButton = this.createStyledButton('Cancel', () => this.close());
-		const excludeAllButton = this.createStyledButton('Exclude All', () => this.handleExcludeAll());
-		const applyButton = this.createStyledButton('Apply to All Notes', () => this.handleBatchSave());
+		const excludeAllButton = this.createStyledButton('Exclude All', () => {
+			this.handleExcludeAll().catch(error => console.error('Exclude all failed:', error));
+		});
+		const applyButton = this.createStyledButton('Apply to All Notes', () => {
+			this.handleBatchSave().catch(error => console.error('Batch save failed:', error));
+		});
 		applyButton.id = 'batch-apply-button';
 		
 		buttonsContainer.appendChild(cancelButton);
@@ -131,8 +135,8 @@ export class BatchAddContextModal extends BaseNoteModal {
 
 	private updateButtonStates(): void {
 		const applyButton = this.contentEl.querySelector('#batch-apply-button') as HTMLButtonElement;
-		if (applyButton) {
-			const isValid = this.contextFieldManager?.hasValidEntries() || false;
+		if (applyButton !== null) {
+			const isValid = this.contextFieldManager?.hasValidEntries() ?? false;
 			applyButton.disabled = !isValid;
 			applyButton.style.opacity = isValid ? '1' : '0.5';
 			applyButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
@@ -149,7 +153,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 		}
 
 		const applyButton = this.contentEl.querySelector('#batch-apply-button') as HTMLButtonElement;
-		if (!applyButton) {return;}
+		if (applyButton === null) {return;}
 
 		try {
 			// Disable button and show initial progress
@@ -177,7 +181,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 
 				try {
 					// Get existing frontmatter
-					const existingFrontmatter = await this.noteService.getFrontmatter(note);
+					const existingFrontmatter = this.noteService.getFrontmatter(note);
 					
 					// Merge with new contexts (new contexts will be added on top/overwrite existing)
 					const updatedMetadata = { ...existingFrontmatter, ...metadata };
@@ -185,7 +189,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 					await this.noteService.saveMetadata(note, updatedMetadata);
 					successCount++;
 				} catch (error) {
-					errors.push(`${note.basename}: ${error}`);
+					errors.push(`${note.basename}: ${error instanceof Error ? error.message : String(error)}`);
 				}
 
 				// Small delay to allow UI to update
@@ -213,7 +217,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 			this.showError('Error applying contexts. Please try again.');
 			
 			// Reset button on error
-			if (applyButton) {
+			if (applyButton !== null) {
 				applyButton.textContent = 'Apply to All Notes';
 				applyButton.disabled = false;
 			}
@@ -237,7 +241,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 					await this.noteService.excludeNote(note);
 					successCount++;
 				} catch (error) {
-					errors.push(`${note.basename}: ${error}`);
+					errors.push(`${note.basename}: ${error instanceof Error ? error.message : String(error)}`);
 				}
 
 				// Small delay to allow UI to update
@@ -263,10 +267,10 @@ export class BatchAddContextModal extends BaseNoteModal {
 		}
 	}
 
-	private async loadPastContextsAsync(): Promise<void> {
+	private loadPastContextsAsync(): void {
 		try {
 			// Load past contexts in the background
-			const pastContexts = await this.noteService.getAllPastContexts();
+			const pastContexts = this.noteService.getAllPastContexts();
 			
 			// Update the field manager with the loaded contexts
 			if (this.contextFieldManager) {

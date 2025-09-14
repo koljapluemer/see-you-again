@@ -37,7 +37,7 @@ export class AddContextModal extends BaseNoteModal {
 			if (this.plugin.settings.currentModalNote) {
 				const previousNote = this.app.vault.getAbstractFileByPath(this.plugin.settings.currentModalNote);
 				if (previousNote instanceof TFile) {
-					const isStillEligible = await this.noteService.isNoteEligible(previousNote);
+					const isStillEligible = this.noteService.isNoteEligible(previousNote);
 					if (isStillEligible) {
 						this.currentNote = previousNote;
 						await this.renderModal();
@@ -55,7 +55,7 @@ export class AddContextModal extends BaseNoteModal {
 			}
 
 			// If no previous note or it's not eligible, get a random one
-			this.currentNote = await this.noteService.getRandomNote();
+			this.currentNote = this.noteService.getRandomNote();
 			
 			if (!this.currentNote) {
 				this.showNoNotesMessage();
@@ -130,7 +130,7 @@ export class AddContextModal extends BaseNoteModal {
 			this.updateButtonStates();
 		});
 
-		// Load past contexts asynchronously (quality of life, don't wait)
+		// Load past contexts (quality of life)
 		this.loadPastContextsAsync();
 
 		// Buttons container
@@ -138,10 +138,18 @@ export class AddContextModal extends BaseNoteModal {
 		buttonsContainer.className = 'modal-button-row';
 		
 		// Create buttons directly
-		const skipButton = this.createStyledButton('Skip', () => this.handleSkip());
-		const excludeButton = this.createStyledButton('Exclude', () => this.handleExclude());
-		const jumpButton = this.createStyledButton('Jump to Note', () => this.jumpToNote());
-		this.saveAndNextButton = this.createStyledButton('Save & Next', () => this.handleSaveAndNext());
+		const skipButton = this.createStyledButton('Skip', () => {
+			this.handleSkip().catch(error => console.error('Skip failed:', error));
+		});
+		const excludeButton = this.createStyledButton('Exclude', () => {
+			this.handleExclude().catch(error => console.error('Exclude failed:', error));
+		});
+		const jumpButton = this.createStyledButton('Jump to Note', () => {
+			this.jumpToNote().catch(error => console.error('Jump to note failed:', error));
+		});
+		this.saveAndNextButton = this.createStyledButton('Save & Next', () => {
+			this.handleSaveAndNext().catch(error => console.error('Save and next failed:', error));
+		});
 		
 		buttonsContainer.appendChild(skipButton);
 		buttonsContainer.appendChild(excludeButton);
@@ -210,7 +218,7 @@ export class AddContextModal extends BaseNoteModal {
 	private updateButtonStates(): void {
 		if (!this.saveAndNextButton) {return;}
 		
-		const isValid = this.contextFieldManager?.hasValidEntries() || false;
+		const isValid = this.contextFieldManager?.hasValidEntries() ?? false;
 		
 		this.saveAndNextButton.disabled = !isValid;
 		this.saveAndNextButton.style.opacity = isValid ? '1' : '0.5';
@@ -235,10 +243,10 @@ export class AddContextModal extends BaseNoteModal {
 		}
 	}
 
-	private async loadPastContextsAsync(): Promise<void> {
+	private loadPastContextsAsync(): void {
 		try {
 			// Load past contexts in the background
-			const pastContexts = await this.noteService.getAllPastContexts();
+			const pastContexts = this.noteService.getAllPastContexts();
 			
 			// Update the field manager with the loaded contexts
 			if (this.contextFieldManager) {

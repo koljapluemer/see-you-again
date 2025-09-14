@@ -41,9 +41,9 @@ export class NoteRenderer {
 			app,
 			content,
 			container,
-			currentNote?.path || '',
+			(currentNote?.path !== null && currentNote?.path !== undefined) ? currentNote.path : '',
 			renderChild
-		);
+		).catch(error => console.error('Failed to render markdown:', error));
 	}
 
 
@@ -52,7 +52,7 @@ export class NoteRenderer {
 	 */
 	static removeFrontmatter(content: string): string {
 		// Remove YAML frontmatter if present
-		if (content.startsWith('---')) {
+		if (content !== null && content !== undefined && content !== '' && content.startsWith('---')) {
 			const frontmatterEnd = content.indexOf('---', 3);
 			if (frontmatterEnd !== -1 && frontmatterEnd > 0) {
 				return content.substring(frontmatterEnd + 3).trim();
