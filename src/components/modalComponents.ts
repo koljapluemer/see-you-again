@@ -78,8 +78,14 @@ export class ContextFieldManager {
 	}
 
 	private addNewField(): void {
-		this.entries.push({ context: '', action: 'look-at' });
-		this.render();
+		const newEntry: ContextEntry = { context: '', action: 'look-at' };
+		this.entries.push(newEntry);
+		this.appendField(newEntry, this.entries.length - 1);
+	}
+
+	private appendField(entry: ContextEntry, index: number): void {
+		const fieldRow = this.createFieldRow(entry, index);
+		this.container.appendChild(fieldRow);
 	}
 
 	private render(): void {
@@ -117,11 +123,15 @@ export class ContextFieldManager {
 		// Find empty entry or add new one
 		const emptyIndex = this.entries.findIndex(entry => entry.context.trim() === '');
 		if (emptyIndex >= 0) {
+			// Update existing empty entry - need full re-render to update the field values
 			this.entries[emptyIndex] = { context, action };
+			this.render();
 		} else {
-			this.entries.push({ context, action });
+			// Add new entry - can just append
+			const newEntry: ContextEntry = { context, action };
+			this.entries.push(newEntry);
+			this.appendField(newEntry, this.entries.length - 1);
 		}
-		this.render();
 	}
 
 	reset(): void {
