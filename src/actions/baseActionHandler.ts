@@ -48,10 +48,9 @@ export abstract class BaseActionHandler implements ActionHandler {
 				container.style.color = 'var(--text-muted)';
 			} else {
 				const { NoteRenderer } = await import('../utils/noteRenderer');
-				await NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+				NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
 			}
 		} catch (error) {
-			console.error('Error loading note content:', error);
 			container.createEl('div', { 
 				text: 'Could not load note preview',
 				cls: 'note-preview-error'

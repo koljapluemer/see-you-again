@@ -68,7 +68,6 @@ export class AddContextModal extends BaseNoteModal {
 
 			await this.renderModal();
 		} catch (error) {
-			console.error('Error loading random note:', error);
 			this.showError('Error loading note. Please try again.');
 		}
 	}
@@ -112,10 +111,9 @@ export class AddContextModal extends BaseNoteModal {
 				previewContainer.style.color = 'var(--text-muted)';
 			} else {
 				// Render the markdown content
-				await NoteRenderer.renderNoteContent(previewContainer, noteContent, this.currentNote, this.app, this.plugin);
+				NoteRenderer.renderNoteContent(previewContainer, noteContent, this.currentNote, this.app, this.plugin);
 			}
 		} catch (error) {
-			console.error('Error loading note content:', error);
 			previewContainer.createEl('div', { 
 				text: 'Could not load note preview',
 				cls: 'note-preview-error'
@@ -173,7 +171,6 @@ export class AddContextModal extends BaseNoteModal {
 			await this.plugin.saveSettings();
 			await this.loadRandomNote();
 		} catch (error) {
-			console.error('Error excluding note:', error);
 			this.showError('Error excluding note. Please try again.');
 		}
 	}
@@ -202,7 +199,6 @@ export class AddContextModal extends BaseNoteModal {
 			await this.plugin.saveSettings();
 			await this.loadRandomNote();
 		} catch (error) {
-			console.error('Error saving note metadata:', error);
 			this.showError('Error saving note. Please try again.');
 		}
 	}
@@ -235,7 +231,6 @@ export class AddContextModal extends BaseNoteModal {
 			// Close the modal
 			this.close();
 		} catch (error) {
-			console.error('Error jumping to note:', error);
 			this.showError('Error opening note. Please try again.');
 		}
 	}
@@ -250,7 +245,6 @@ export class AddContextModal extends BaseNoteModal {
 				this.contextFieldManager.setPastContexts(pastContexts);
 			}
 		} catch (error) {
-			console.error('Error loading past contexts for autocomplete:', error);
 			// Fail silently - this is just quality of life, not critical functionality
 		}
 	}

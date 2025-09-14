@@ -41,7 +41,6 @@ export class NoteService {
 			
 			return true;
 		} catch (error) {
-			console.error('Error checking frontmatter for file:', file.path, error);
 			return false;
 		}
 	}
@@ -86,7 +85,6 @@ export class NoteService {
 				frontmatter['see-you-again'] = metadata;
 			});
 		} catch (error) {
-			console.error('Error saving metadata to file:', file.path, error);
 			throw error;
 		}
 	}
@@ -133,7 +131,6 @@ export class NoteService {
 					}
 				}
 			} catch (error) {
-				console.error('Error reading contexts from file:', file.path, error);
 			}
 		}
 
@@ -170,7 +167,6 @@ export class NoteService {
 					}
 				}
 			} catch (error) {
-				console.error('Error checking context in file:', file.path, error);
 			}
 		}
 
@@ -236,7 +232,6 @@ export class NoteService {
 					}
 				}
 			} catch (error) {
-				console.error('Error checking context and action type in file:', file.path, error);
 			}
 		}
 
@@ -257,7 +252,6 @@ export class NoteService {
 		sanitizedContext: string, 
 		preferredActionType: ActionType | null
 	): Promise<{ file: TFile; actionType: ActionType } | null> {
-		console.log(`[NoteService] Looking for notes with context "${sanitizedContext}", preferred action type: ${preferredActionType || 'any'}`);
 
 		// First try to find notes with the preferred action type
 		if (preferredActionType) {
@@ -267,14 +261,12 @@ export class NoteService {
 				const randomIndex = Math.floor(Math.random() * preferredNotes.length);
 				const selectedFile = preferredNotes[randomIndex];
 				
-				console.log(`[NoteService] ✅ Found ${preferredNotes.length} notes with preferred action type "${preferredActionType}", selected: ${selectedFile.name}`);
 				
 				return {
 					file: selectedFile,
 					actionType: preferredActionType
 				};
 			} else {
-				console.log(`[NoteService] ❌ No notes found with preferred action type "${preferredActionType}"`);
 			}
 		}
 
@@ -282,7 +274,6 @@ export class NoteService {
 		const allNotesWithContext = await this.getNotesWithContext(sanitizedContext);
 		
 		if (allNotesWithContext.length === 0) {
-			console.log(`[NoteService] ❌ No notes found with context "${sanitizedContext}"`);
 			return null;
 		}
 
@@ -293,7 +284,6 @@ export class NoteService {
 		const frontmatter = await this.getFrontmatter(selectedFile);
 		const actualActionType = frontmatter[sanitizedContext];
 		
-		console.log(`[NoteService] 📝 Fallback: Selected "${selectedFile.name}" with action type "${actualActionType}" (${allNotesWithContext.length} total options)`);
 		
 		return {
 			file: selectedFile,
@@ -320,7 +310,6 @@ export class NoteService {
 			
 			return {};
 		} catch (error) {
-			console.error('Error getting frontmatter for file:', file.path, error);
 			return {};
 		}
 	}
@@ -344,7 +333,6 @@ export class NoteService {
 				frontmatter['seen-you-again'] = currentHumanDay;
 			});
 		} catch (error) {
-			console.error('Error marking note as seen:', file.path, error);
 			throw error;
 		}
 	}
@@ -365,7 +353,6 @@ export class NoteService {
 				}
 			});
 		} catch (error) {
-			console.error('Error removing context from note:', file.path, error);
 			throw error;
 		}
 	}
@@ -397,7 +384,6 @@ export class NoteService {
 			// Move the file
 			await this.app.fileManager.renameFile(file, finalPath);
 		} catch (error) {
-			console.error('Error archiving note:', file.path, error);
 			throw error;
 		}
 	}
@@ -411,7 +397,6 @@ export class NoteService {
 				frontmatter[property] = value;
 			});
 		} catch (error) {
-			console.error(`Error setting frontmatter property ${property} for file:`, file.path, error);
 			throw error;
 		}
 	}
@@ -423,7 +408,6 @@ export class NoteService {
 		try {
 			await this.app.vault.delete(file);
 		} catch (error) {
-			console.error('Error deleting note:', file.path, error);
 			throw error;
 		}
 	}

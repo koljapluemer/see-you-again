@@ -104,7 +104,6 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 			container.createEl('div', { text: `Progress: ${percentage}%` });
 
 		} catch (error) {
-			console.error('Error calculating stats:', error);
 			container.createEl('div', { text: 'Error calculating statistics' });
 		}
 	}
@@ -141,7 +140,6 @@ export class SeeYouAgainSettingTab extends PluginSettingTab {
 			new Notice(`Reset ${resetCount} notes. All notes are now available for processing again.`);
 
 		} catch (error) {
-			console.error('Error resetting notes:', error);
 			new Notice('Error resetting notes. Please try again.');
 		}
 	}

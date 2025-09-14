@@ -44,7 +44,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 				if (this.currentActionType) {
 					// Track the resumed action type
 					this.plugin.stateManager.incrementActionTypeUsage(this.currentActionType);
-					console.log(`[ContextNoteViewerModal] 🔄 Resumed note "${file.name}" with action type "${this.currentActionType}"`);
 				}
 				
 				await this.loadActionType();
@@ -71,14 +70,12 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			const actionTypeUsage = this.plugin.stateManager.getActionTypeUsage();
 			const preferredActionType = ActionTypeScheduler.getMostUnderpickedActionType(actionTypeUsage);
 			
-			console.log('[ContextNoteViewerModal] Loading note with scheduling info:', {
 				context: this.sanitizedContext,
 				preferredActionType,
 				currentUsage: actionTypeUsage
 			});
 			
 			// Log current usage summary
-			console.log('[ContextNoteViewerModal] Current session usage:\n' + 
 				ActionTypeScheduler.getUsageSummary(actionTypeUsage));
 
 			// Try to get a note with the preferred action type
@@ -98,12 +95,10 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			// Track that this action type was used
 			this.plugin.stateManager.incrementActionTypeUsage(result.actionType);
 			
-			console.log(`[ContextNoteViewerModal] ✅ Selected note "${result.file.name}" with action type "${result.actionType}"`);
 
 			await this.loadActionType();
 			await this.renderModal();
 		} catch (error) {
-			console.error('Error loading random note with context:', error);
 			this.showError('Error loading note. Please try again.');
 		}
 	}
@@ -145,7 +140,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			// Create the appropriate action handler
 			this.currentActionHandler = await ActionHandlerFactory.createHandler(this.currentActionType, context);
 		} catch (error) {
-			console.error('Error loading action type:', error);
 			this.currentActionHandler = null;
 		}
 	}
@@ -180,7 +174,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		try {
 			await this.noteService.markNoteSeen(this.currentNote);
 		} catch (error) {
-			console.error('Failed to mark note as seen:', error);
 		}
 
 		// Note title (only for non-memorize actions, memorize handles its own heading)
@@ -247,7 +240,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			// Close the modal
 			this.close();
 		} catch (error) {
-			console.error('Error jumping to note:', error);
 			this.showError('Error opening note. Please try again.');
 		}
 	}
@@ -259,7 +251,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
 			await this.handleNext(); // Load next note after removing context
 		} catch (error) {
-			console.error('Error removing context:', error);
 			this.showError('Error removing context. Please try again.');
 		}
 	}
@@ -272,7 +263,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			await this.noteService.archiveNote(this.currentNote, this.plugin.settings.archiveFolder);
 			await this.handleNext(); // Load next note after archiving
 		} catch (error) {
-			console.error('Error removing context and archiving:', error);
 			this.showError('Error archiving note. Please try again.');
 		}
 	}
@@ -288,7 +278,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			await this.noteService.deleteNote(this.currentNote);
 			await this.handleNext(); // Load next note after deletion
 		} catch (error) {
-			console.error('Error deleting note:', error);
 			this.showError('Error deleting note. Please try again.');
 		}
 	}

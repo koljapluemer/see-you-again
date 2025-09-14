@@ -27,7 +27,6 @@ export class ActionTypeScheduler {
     const mostUnderpicked = stats[0];
     
     // Log the scheduling decision
-    console.log('[ActionTypeScheduler] Most underpicked action type:', {
       selected: mostUnderpicked.actionType,
       deficitRatio: mostUnderpicked.deficitRatio.toFixed(2),
       actual: `${mostUnderpicked.actualCount} (${mostUnderpicked.actualPercentage.toFixed(1)}%)`,

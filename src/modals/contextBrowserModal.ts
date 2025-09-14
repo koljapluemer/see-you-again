@@ -56,7 +56,6 @@ export class ContextBrowserModal extends Modal {
 			this.allContexts = await this.noteService.getAllPastContexts();
 			this.filteredContexts = [...this.allContexts];
 		} catch (error) {
-			console.error('Error loading contexts:', error);
 			new Notice('Error loading contexts. Please try again.');
 			this.allContexts = [];
 			this.filteredContexts = [];

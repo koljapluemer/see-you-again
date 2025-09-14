@@ -5,23 +5,22 @@ export class NoteRenderer {
 	/**
 	 * Render note content with full markdown support
 	 */
-	static async renderNoteContent(
-		container: HTMLElement, 
-		content: string, 
+	static renderNoteContent(
+		container: HTMLElement,
+		content: string,
 		currentNote: TFile | null,
 		app: App,
 		plugin: Plugin
-	): Promise<void> {
+	): void {
 		// Remove frontmatter if present
 		const contentWithoutFrontmatter = this.removeFrontmatter(content);
 		const previewContent = contentWithoutFrontmatter.trim();
 
 		// Use Obsidian's markdown renderer
 		const previewEl = container.createEl('div', { cls: 'note-preview-content' });
-		
+
 		// Render markdown using Obsidian's renderer - this handles images, wikilinks, etc.
 		this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
-		
 	}
 
 	/**
@@ -55,7 +54,7 @@ export class NoteRenderer {
 		// Remove YAML frontmatter if present
 		if (content.startsWith('---')) {
 			const frontmatterEnd = content.indexOf('---', 3);
-			if (frontmatterEnd !== -1) {
+			if (frontmatterEnd !== -1 && frontmatterEnd > 0) {
 				return content.substring(frontmatterEnd + 3).trim();
 			}
 		}

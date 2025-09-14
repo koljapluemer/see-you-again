@@ -47,8 +47,8 @@ export class EvaluateActionHandler extends BaseActionHandler {
 			
 			// Get current date in yyyy-mm-dd format
 			const today = new Date();
-			const dateStr = today.getFullYear() + '-' + 
-				String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+			const dateStr = today.getFullYear().toString() + '-' +
+				String(today.getMonth() + 1).padStart(2, '0') + '-' +
 				String(today.getDate()).padStart(2, '0');
 			
 			// Add the evaluation as a bullet point with date
@@ -61,7 +61,6 @@ export class EvaluateActionHandler extends BaseActionHandler {
 			// Proceed to next note
 			await this.context.onNext();
 		} catch (error) {
-			console.error('Error saving evaluation to note:', error);
 			this.context.showError('Error saving evaluation. Please try again.');
 		}
 	}

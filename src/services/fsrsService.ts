@@ -24,7 +24,6 @@ export class FSRSService {
 				return this.deserializeCard(cardData);
 			}
 		} catch (error) {
-			console.warn(`Failed to load FSRS card data for ${note.name}:`, error);
 		}
 
 		// Return empty card if no valid data exists
@@ -81,7 +80,6 @@ export class FSRSService {
 				return new Date(typedCardData.due);
 			}
 		} catch (error) {
-			console.warn(`Failed to get due date for ${note.name}:`, error);
 		}
 
 		return null;

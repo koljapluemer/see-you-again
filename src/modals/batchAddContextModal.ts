@@ -68,7 +68,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 
 			await this.renderModal();
 		} catch (error) {
-			console.error('Error loading search results:', error);
 			this.showError('Error loading search results. Please try again.');
 		}
 	}
@@ -186,7 +185,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 					await this.noteService.saveMetadata(note, updatedMetadata);
 					successCount++;
 				} catch (error) {
-					console.error(`Error updating note ${note.path}:`, error);
 					errors.push(`${note.basename}: ${error}`);
 				}
 
@@ -205,7 +203,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 			}
 
 			if (errors.length > 0) {
-				console.error('Batch update errors:', errors);
 				this.showError(`Failed to update ${errors.length} notes. Check console for details.`);
 			}
 
@@ -213,7 +210,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 			setTimeout(() => this.close(), 2000);
 			
 		} catch (error) {
-			console.error('Error in batch save:', error);
 			this.showError('Error applying contexts. Please try again.');
 			
 			// Reset button on error
@@ -241,7 +237,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 					await this.noteService.excludeNote(note);
 					successCount++;
 				} catch (error) {
-					console.error(`Error excluding note ${note.path}:`, error);
 					errors.push(`${note.basename}: ${error}`);
 				}
 
@@ -257,7 +252,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 			}
 
 			if (errors.length > 0) {
-				console.error('Batch exclude errors:', errors);
 				this.showError(`Failed to exclude ${errors.length} notes. Check console for details.`);
 			}
 
@@ -265,7 +259,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 			setTimeout(() => this.close(), 1000);
 			
 		} catch (error) {
-			console.error('Error in batch exclude:', error);
 			this.showError('Error excluding notes. Please try again.');
 		}
 	}
@@ -280,7 +273,6 @@ export class BatchAddContextModal extends BaseNoteModal {
 				this.contextFieldManager.setPastContexts(pastContexts);
 			}
 		} catch (error) {
-			console.error('Error loading past contexts for autocomplete:', error);
 			// Fail silently - this is just quality of life, not critical functionality
 		}
 	}

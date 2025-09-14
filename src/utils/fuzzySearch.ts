@@ -45,13 +45,13 @@ export class FuzzySearch {
 		maxResults?: number
 	): T[] {
 		if (!query.trim()) {
-			return maxResults ? items.slice(0, maxResults) : items;
+			return (maxResults !== undefined && maxResults > 0) ? items.slice(0, maxResults) : items;
 		}
 
 		const results = this.filterWithScores(items, query, textExtractor);
 		const filtered = results.map(result => result.item);
 		
-		return maxResults ? filtered.slice(0, maxResults) : filtered;
+		return (maxResults !== undefined && maxResults > 0) ? filtered.slice(0, maxResults) : filtered;
 	}
 
 	/**

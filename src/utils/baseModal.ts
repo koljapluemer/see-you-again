@@ -12,7 +12,7 @@ export abstract class BaseNoteModal extends Modal {
 		this.plugin = plugin;
 	}
 
-	onOpen() {
+	onOpen(): void {
 		// Add our namespace class to the modal
 		this.containerEl.addClass('see-you-again-modal');
 		super.onOpen();
@@ -61,8 +61,8 @@ export abstract class BaseNoteModal extends Modal {
 	protected createHeader(title: string, buttonText?: string, buttonClick?: () => void): HTMLElement {
 		const header = this.contentEl.createEl('div');
 		header.className = 'base-modal-header';
-		
-		if (buttonText && buttonClick) {
+
+		if (buttonText !== undefined && buttonText.length > 0 && buttonClick) {
 			// Header with button
 			const headerTop = header.createEl('div');
 			headerTop.className = 'base-modal-header-with-button';

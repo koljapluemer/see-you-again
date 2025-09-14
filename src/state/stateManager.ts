@@ -21,7 +21,7 @@ export interface PluginState {
   contextsCacheTimestamp: number | null;
 }
 
-type StateListener<T = any> = (newValue: T, oldValue: T) => void;
+type StateListener<T = unknown> = (newValue: T, oldValue: T) => void;
 
 export class StateManager {
   private state: PluginState;
@@ -69,13 +69,13 @@ export class StateManager {
   
   // Batch updates
   update(updates: Partial<PluginState>): void {
-    const changes: Array<{key: keyof PluginState, newValue: any, oldValue: any}> = [];
-    
+    const changes: Array<{key: keyof PluginState, newValue: unknown, oldValue: unknown}> = [];
+
     for (const [key, value] of Object.entries(updates)) {
       const typedKey = key as keyof PluginState;
       const oldValue = this.state[typedKey];
       if (oldValue !== value) {
-        (this.state as any)[typedKey] = value;
+        (this.state as Record<string, unknown>)[typedKey] = value;
         changes.push({ key: typedKey, newValue: value, oldValue });
       }
     }
@@ -98,7 +98,11 @@ export class StateManager {
     if (!this.listeners.has(key)) {
       this.listeners.set(key, new Set());
     }
-    this.listeners.get(key)!.add(listener);
+    this.listeners.get(key)?.add(listener) ?? (() => {
+      const listenerSet = new Set<StateListener>();
+      listenerSet.add(listener);
+      this.listeners.set(key, listenerSet);
+    })();
     
     return () => this.unsubscribe(key, listener);
   }
@@ -111,15 +115,14 @@ export class StateManager {
   }
   
   private notifyListeners<K extends keyof PluginState>(
-    key: K | 'any', 
-    newValue: any, 
-    oldValue: any
+    key: K | 'any',
+    newValue: unknown,
+    oldValue: unknown
   ): void {
     this.listeners.get(key)?.forEach(listener => {
       try {
         listener(newValue, oldValue);
       } catch (error) {
-        console.error(`State listener error for ${key}:`, error);
       }
     });
   }

@@ -57,7 +57,6 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 				}
 			}
 		} catch (error) {
-			console.error('Error loading contexts:', error);
 		}
 	}
 
@@ -140,7 +139,6 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 			new Notice(`Saved ${Object.keys(newContexts).length} contexts`);
 			this.close();
 		} catch (error) {
-			console.error('Error saving contexts:', error);
 			this.showError('Error saving contexts. Please try again.');
 		}
 	}
