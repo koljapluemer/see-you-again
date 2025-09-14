@@ -54,20 +54,22 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		// Extract text from heading (remove # symbols)
 		const titleText = this.noteHeading.replace(/^#+\s*/, '');
 
-		// Split into words and filter out empty strings
+		// Split into words and filter out empty strings and words with less than 3 characters
 		const words = titleText.split(/\s+/).filter(word => word.length > 0);
+		const eligibleWords = words.filter(word => word.length >= 3);
 
-		if (words.length === 0) {
+		if (eligibleWords.length === 0) {
 			this.titleWithBlank = this.noteHeading;
 			return;
 		}
 
-		// Choose a random word to hide
-		const randomIndex = Math.floor(Math.random() * words.length);
-		this.hiddenWord = words[randomIndex];
+		// Choose a random eligible word to hide
+		const randomEligibleWord = eligibleWords[Math.floor(Math.random() * eligibleWords.length)];
+		this.hiddenWord = randomEligibleWord;
 
-		// Replace the word with a blank
-		words[randomIndex] = '＿';
+		// Find the index of this word in the original words array and replace it
+		const wordIndex = words.indexOf(randomEligibleWord);
+		words[wordIndex] = '＿';
 
 		// Reconstruct the heading with the same # symbols
 		const headingPrefix = this.noteHeading.match(/^#+\s*/)?.[0] || '# ';
