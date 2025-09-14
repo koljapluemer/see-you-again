@@ -1,5 +1,7 @@
-import { App, PluginSettingTab, Setting, Plugin, Notice } from 'obsidian';
-import { SeeYouAgainSettings } from './types';
+import type { App, Plugin} from 'obsidian';
+import { PluginSettingTab, Setting, Notice } from 'obsidian';
+
+import type { SeeYouAgainSettings } from './types';
 import { FolderSuggest } from './utils/folderSuggester';
 
 export class SeeYouAgainSettingTab extends PluginSettingTab {

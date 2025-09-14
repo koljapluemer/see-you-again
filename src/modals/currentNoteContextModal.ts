@@ -1,6 +1,9 @@
-import { App, Notice, MarkdownView, ButtonComponent } from 'obsidian';
+import type { App} from 'obsidian';
+import { Notice, MarkdownView, ButtonComponent } from 'obsidian';
+
 import { NoteService } from '../noteService';
-import { SeeYouAgainPlugin, ActionType, ACTION_OPTIONS } from '../types';
+import type { SeeYouAgainPlugin, ActionType} from '../types';
+import { ACTION_OPTIONS } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextFieldManager } from '../components/modalComponents';
 import { ContextUtils } from '../utils/contextUtils';
@@ -41,7 +44,7 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 	}
 
 	private async loadExistingContexts(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		try {
 			const fileCache = this.app.metadataCache.getFileCache(this.currentNote);
@@ -59,39 +62,16 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 	}
 
 	private async renderModal(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		const { contentEl } = this;
 		contentEl.empty();
 
 		// Create header with note filename
 		this.createHeader(`Manage Contexts: ${this.currentNote.basename}`);
-		
-		// Show current note name
-		const noteInfo = contentEl.createEl('div');
-		noteInfo.className = 'current-note-title';
-		noteInfo.createEl('strong', { text: 'Note: ' });
-		noteInfo.createSpan({ text: this.currentNote.basename });
 
-		// Show existing contexts if any
-		if (Object.keys(this.existingContexts).length > 0) {
-			const existingSection = contentEl.createEl('div');
-			existingSection.className = 'existing-contexts-container';
-			existingSection.createEl('h3', { text: 'Current Contexts:' });
-			
-			const pillsContainer = existingSection.createEl('div');
-			pillsContainer.className = 'context-pills-container';
-			
-			this.renderExistingContexts(pillsContainer);
-		}
-
-		// Add new contexts section
-		const addSection = contentEl.createEl('div');
-		addSection.className = 'add-context-section';
-		addSection.createEl('h3', { text: 'Add New Contexts:' });
-
-		// Use the existing ContextFieldManager for adding contexts
-		const fieldsContainer = addSection.createEl('div');
+		// Context fields container
+		const fieldsContainer = contentEl.createEl('div');
 		fieldsContainer.className = 'modal-fields-container';
 
 		this.contextFieldManager = new ContextFieldManager(
@@ -104,6 +84,9 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		const pastContexts = await this.noteService.getAllPastContexts();
 		this.contextFieldManager.setPastContexts(pastContexts);
 
+		// Prefill with existing contexts
+		this.prefillExistingContexts();
+
 		// Buttons
 		const buttonContainer = contentEl.createEl('div');
 		buttonContainer.className = 'modal-button-row';
@@ -112,7 +95,7 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		const saveButton = new ButtonComponent(buttonContainer);
 		saveButton.setButtonText('Save Contexts');
 		saveButton.onClick(async () => {
-			await this.saveNewContexts();
+			await this.saveAllContexts();
 		});
 
 		// Close button
@@ -121,93 +104,46 @@ export class CurrentNoteContextModal extends BaseNoteModal {
 		closeButton.onClick(() => this.close());
 	}
 
-	private renderExistingContexts(container: HTMLElement): void {
+	private prefillExistingContexts(): void {
+		if (!this.contextFieldManager) {return;}
+
+		// Convert existing contexts to ContextEntry format and prefill
 		Object.entries(this.existingContexts).forEach(([sanitizedContext, action]) => {
 			const hydratedContext = ContextUtils.hydrateContextKey(sanitizedContext);
-			const actionLabel = ACTION_OPTIONS.find(opt => opt.value === action)?.label || action;
-
-			const pill = container.createEl('div');
-			pill.className = 'context-pill';
-
-			const contextText = pill.createEl('span', { text: hydratedContext });
-			contextText.className = 'context-text';
-
-			const actionBadge = pill.createEl('span', { text: actionLabel });
-			actionBadge.className = 'action-badge';
-
-			const removeButton = pill.createEl('button', { text: '×' });
-			removeButton.className = 'remove-button';
-			removeButton.addEventListener('click', async () => {
-				await this.removeContext(sanitizedContext);
-			});
+			this.contextFieldManager!.addEntry(hydratedContext, action);
 		});
 	}
 
-	private async removeContext(sanitizedContext: string): Promise<void> {
-		if (!this.currentNote) return;
+	private async saveAllContexts(): Promise<void> {
+		if (!this.currentNote || !this.contextFieldManager) {return;}
 
-		try {
-			delete this.existingContexts[sanitizedContext];
-			await this.saveContexts();
-			
-			const hydratedContext = ContextUtils.hydrateContextKey(sanitizedContext);
-			new Notice(`Removed context: ${hydratedContext}`);
-			
-			// Re-render the modal
-			await this.renderModal();
-		} catch (error) {
-			console.error('Error removing context:', error);
-			this.showError('Error removing context. Please try again.');
-		}
-	}
-
-	private async saveNewContexts(): Promise<void> {
-		if (!this.currentNote || !this.contextFieldManager) return;
-
-		const newEntries = this.contextFieldManager.getEntries();
-		if (newEntries.length === 0) {
-			new Notice('No new contexts to add');
+		const allEntries = this.contextFieldManager.getEntries();
+		if (allEntries.length === 0) {
+			new Notice('No contexts to save');
 			return;
 		}
 
 		try {
-			let addedCount = 0;
-			
-			for (const entry of newEntries) {
+			const newContexts: { [key: string]: ActionType } = {};
+
+			for (const entry of allEntries) {
 				if (!ContextUtils.validateContext(entry.context)) {
 					new Notice(`Context "${entry.context}" is too long or invalid`);
 					continue;
 				}
 
 				const sanitizedKey = ContextUtils.sanitizeContextKey(entry.context);
-				
-				// Check if context already exists
-				if (this.existingContexts[sanitizedKey]) {
-					new Notice(`Context "${entry.context}" already exists for this note`);
-					continue;
-				}
-
-				this.existingContexts[sanitizedKey] = entry.action;
-				addedCount++;
+				newContexts[sanitizedKey] = entry.action;
 			}
 
-			if (addedCount > 0) {
-				await this.saveContexts();
-				new Notice(`Added ${addedCount} context${addedCount !== 1 ? 's' : ''}`);
-				
-				// Reset the field manager and re-render
-				this.contextFieldManager.reset();
-				await this.renderModal();
-			}
+			await this.noteService.saveMetadata(this.currentNote, newContexts);
+			new Notice(`Saved ${Object.keys(newContexts).length} contexts`);
+			this.close();
 		} catch (error) {
 			console.error('Error saving contexts:', error);
 			this.showError('Error saving contexts. Please try again.');
 		}
 	}
 
-	private async saveContexts(): Promise<void> {
-		if (!this.currentNote) return;
-		await this.noteService.saveMetadata(this.currentNote, this.existingContexts);
-	}
 
 }

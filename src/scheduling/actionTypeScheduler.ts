@@ -1,4 +1,4 @@
-import { ActionType } from '../types';
+import type { ActionType } from '../types';
 import { ActionTypeWeightsConfig } from '../config/actionTypeWeights';
 
 export interface ActionTypeStats {

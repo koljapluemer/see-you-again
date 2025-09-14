@@ -1,5 +1,6 @@
-import { App, TFile } from 'obsidian';
-import { SeeYouAgainPlugin } from '../types';
+import type { App, TFile } from 'obsidian';
+
+import type { SeeYouAgainPlugin } from '../types';
 
 export interface ActionHandlerContext {
 	app: App;

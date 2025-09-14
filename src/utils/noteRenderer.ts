@@ -1,4 +1,5 @@
-import { App, TFile, Plugin, MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
+import type { App, TFile, Plugin} from 'obsidian';
+import { MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
 
 export class NoteRenderer {
 	/**

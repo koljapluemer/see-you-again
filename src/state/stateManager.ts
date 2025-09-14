@@ -1,4 +1,4 @@
-import { ActionType } from '../types';
+import type { ActionType } from '../types';
 
 export interface PluginState {
   // Navigation state

@@ -1,5 +1,5 @@
-import { ActionType } from '../types';
-import { ActionHandler, ActionHandlerContext } from './baseActionHandler';
+import type { ActionType } from '../types';
+import type { ActionHandler, ActionHandlerContext } from './baseActionHandler';
 import { LookAtActionHandler } from './lookAtActionHandler';
 import { IterateActionHandler } from './iterateActionHandler';
 import { ScheduleActionHandler } from './scheduleActionHandler';

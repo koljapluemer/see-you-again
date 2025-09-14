@@ -1,18 +1,19 @@
+import type { Grade, Card } from 'ts-fsrs';
+
 import { BaseActionHandler } from './baseActionHandler';
 import { FSRSService } from '../services/fsrsService';
-import { Grade, Card } from 'ts-fsrs';
 import { NoteService } from '../noteService';
 
 export class MemorizeActionHandler extends BaseActionHandler {
-	private isBodyRevealed: boolean = false;
-	private noteHeading: string = '';
-	private noteBody: string = '';
-	private isFillInBlank: boolean = false;
-	private originalTitle: string = '';
-	private titleWithBlank: string = '';
-	private hasPartialReveal: boolean = false;
-	private contentBeforeSeparator: string = '';
-	private fullContent: string = '';
+	private isBodyRevealed = false;
+	private noteHeading = '';
+	private noteBody = '';
+	private isFillInBlank = false;
+	private originalTitle = '';
+	private titleWithBlank = '';
+	private hasPartialReveal = false;
+	private contentBeforeSeparator = '';
+	private fullContent = '';
 	private fsrsService: FSRSService | undefined;
 	private currentCard: Card | null = null;
 
@@ -195,7 +196,7 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	}
 
 	private async revealFullContent(container: HTMLElement): Promise<void> {
-		if (this.isBodyRevealed) return;
+		if (this.isBodyRevealed) {return;}
 
 		this.isBodyRevealed = true;
 
@@ -219,7 +220,7 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	}
 
 	private async revealFillInBlank(container: HTMLElement): Promise<void> {
-		if (this.isBodyRevealed) return;
+		if (this.isBodyRevealed) {return;}
 
 		this.isBodyRevealed = true;
 
@@ -241,7 +242,7 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	}
 
 	private async revealNoteBody(container: HTMLElement): Promise<void> {
-		if (this.isBodyRevealed) return;
+		if (this.isBodyRevealed) {return;}
 
 		this.isBodyRevealed = true;
 

@@ -1,7 +1,9 @@
-import { App, TFile, Notice } from 'obsidian';
+import type { App} from 'obsidian';
+import { TFile, Notice } from 'obsidian';
+
 import { NoteService } from '../noteService';
 import { ContextFieldManager } from '../components/modalComponents';
-import { SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
+import type { SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { NoteRenderer } from '../utils/noteRenderer';
 import { ContextUtils } from '../utils/contextUtils';
@@ -87,7 +89,7 @@ export class AddContextModal extends BaseNoteModal {
 	}
 
 	private async renderModal(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		const { contentEl } = this;
 		contentEl.empty();
@@ -160,7 +162,7 @@ export class AddContextModal extends BaseNoteModal {
 	}
 
 	private async handleExclude(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		try {
 			await this.noteService.excludeNote(this.currentNote);
@@ -177,7 +179,7 @@ export class AddContextModal extends BaseNoteModal {
 	}
 
 	private async handleSave(): Promise<void> {
-		if (!this.currentNote || !this.contextFieldManager) return;
+		if (!this.currentNote || !this.contextFieldManager) {return;}
 
 		const entries = this.contextFieldManager.getEntries();
 		if (entries.length === 0) {
@@ -210,7 +212,7 @@ export class AddContextModal extends BaseNoteModal {
 	}
 
 	private updateButtonStates(): void {
-		if (!this.saveAndNextButton) return;
+		if (!this.saveAndNextButton) {return;}
 		
 		const isValid = this.contextFieldManager?.hasValidEntries() || false;
 		
@@ -220,7 +222,7 @@ export class AddContextModal extends BaseNoteModal {
 	}
 
 	private async jumpToNote(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		try {
 			// Open the note in the active leaf (same tab)

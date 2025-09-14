@@ -1,5 +1,6 @@
-import { App, TFile } from 'obsidian';
-import { SeeYouAgainFrontmatter, ActionType } from './types';
+import type { App, TFile } from 'obsidian';
+
+import type { SeeYouAgainFrontmatter, ActionType } from './types';
 import { DateUtils } from './utils/dateUtils';
 import { FSRSService } from './services/fsrsService';
 
@@ -328,8 +329,8 @@ export class NoteService {
 	 * Check if a note was seen today (using human-day logic with 4am cutoff)
 	 */
 	private wasSeenToday(lastSeenDate: string | undefined): boolean {
-		if (!lastSeenDate) return false;
-		if (!DateUtils.isValidDateString(lastSeenDate)) return false;
+		if (!lastSeenDate) {return false;}
+		if (!DateUtils.isValidDateString(lastSeenDate)) {return false;}
 		return DateUtils.isToday(lastSeenDate);
 	}
 

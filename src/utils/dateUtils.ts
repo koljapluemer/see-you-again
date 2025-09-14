@@ -49,11 +49,11 @@ export class DateUtils {
 	 * Parse a date string and return if it's valid
 	 */
 	static isValidDateString(dateString: string): boolean {
-		if (!dateString) return false;
+		if (!dateString) {return false;}
 		
 		// Check format yyyy-mm-dd
 		const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-		if (!dateRegex.test(dateString)) return false;
+		if (!dateRegex.test(dateString)) {return false;}
 		
 		// Check if it's a valid date
 		const date = new Date(dateString + 'T00:00:00');

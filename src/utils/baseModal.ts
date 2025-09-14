@@ -1,5 +1,7 @@
-import { App, Modal, TFile, Notice, ButtonComponent } from 'obsidian';
-import { SeeYouAgainPlugin } from '../types';
+import type { App, TFile} from 'obsidian';
+import { Modal, Notice, ButtonComponent } from 'obsidian';
+
+import type { SeeYouAgainPlugin } from '../types';
 
 export abstract class BaseNoteModal extends Modal {
 	protected currentNote: TFile | null = null;

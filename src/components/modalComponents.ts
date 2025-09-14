@@ -1,5 +1,8 @@
-import { TextComponent, Setting, App } from 'obsidian';
-import { ContextEntry, ActionType, ACTION_OPTIONS } from '../types';
+import type { TextComponent, App } from 'obsidian';
+import { Setting } from 'obsidian';
+
+import type { ContextEntry, ActionType} from '../types';
+import { ACTION_OPTIONS } from '../types';
 import { ContextInputSuggest } from './contextSuggest';
 
 

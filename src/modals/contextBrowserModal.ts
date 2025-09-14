@@ -1,6 +1,8 @@
-import { App, Modal, Notice } from 'obsidian';
+import type { App} from 'obsidian';
+import { Modal, Notice } from 'obsidian';
+
 import { NoteService } from '../noteService';
-import { SeeYouAgainPlugin } from '../types';
+import type { SeeYouAgainPlugin } from '../types';
 import { ContextNoteViewerModal } from './contextNoteViewerModal';
 import { FuzzySearch } from '../utils/fuzzySearch';
 import { ContextUtils } from '../utils/contextUtils';
@@ -10,8 +12,8 @@ export class ContextBrowserModal extends Modal {
 	private noteService: NoteService;
 	private allContexts: string[] = [];
 	private filteredContexts: string[] = [];
-	private currentPage: number = 0;
-	private itemsPerPage: number = 10;
+	private currentPage = 0;
+	private itemsPerPage = 10;
 	private searchInput: HTMLInputElement | null = null;
 	private contextList: HTMLElement | null = null;
 	private paginationControls: HTMLElement | null = null;
@@ -90,7 +92,7 @@ export class ContextBrowserModal extends Modal {
 	}
 
 	private handleSearch(): void {
-		if (!this.searchInput) return;
+		if (!this.searchInput) {return;}
 
 		const query = this.searchInput.value.toLowerCase().trim();
 		
@@ -114,7 +116,7 @@ export class ContextBrowserModal extends Modal {
 	}
 
 	private renderContextList(): void {
-		if (!this.contextList) return;
+		if (!this.contextList) {return;}
 
 		this.contextList.innerHTML = '';
 
@@ -141,7 +143,7 @@ export class ContextBrowserModal extends Modal {
 	}
 
 	private renderPaginationControls(): void {
-		if (!this.paginationControls) return;
+		if (!this.paginationControls) {return;}
 
 		this.paginationControls.innerHTML = '';
 

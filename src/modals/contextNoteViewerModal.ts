@@ -1,9 +1,11 @@
-import { App, TFile, ButtonComponent } from 'obsidian';
+import type { App} from 'obsidian';
+import { TFile, ButtonComponent } from 'obsidian';
+
 import { NoteService } from '../noteService';
-import { SeeYouAgainPlugin, ActionType } from '../types';
+import type { SeeYouAgainPlugin, ActionType } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextBrowserModal } from './contextBrowserModal';
-import { ActionHandler, ActionHandlerContext } from '../actions/baseActionHandler';
+import type { ActionHandler, ActionHandlerContext } from '../actions/baseActionHandler';
 import { ActionHandlerFactory } from '../actions/actionHandlerFactory';
 import { ActionTypeScheduler } from '../scheduling/actionTypeScheduler';
 
@@ -169,7 +171,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async renderModal(): Promise<void> {
-		if (!this.currentNote || !this.currentActionHandler) return;
+		if (!this.currentNote || !this.currentActionHandler) {return;}
 
 		const { contentEl } = this;
 		contentEl.empty();
@@ -226,7 +228,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async jumpToNote(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		try {
 			// Store transient state in state manager
@@ -251,7 +253,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async removeContext(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		try {
 			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
@@ -263,7 +265,7 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async removeContextAndArchive(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		try {
 			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
@@ -276,11 +278,11 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 	}
 
 	private async deleteNote(): Promise<void> {
-		if (!this.currentNote) return;
+		if (!this.currentNote) {return;}
 
 		// Confirm deletion
 		const confirmed = confirm(`Are you sure you want to delete the note "${this.currentNote.basename}"? This cannot be undone.`);
-		if (!confirmed) return;
+		if (!confirmed) {return;}
 
 		try {
 			await this.noteService.deleteNote(this.currentNote);

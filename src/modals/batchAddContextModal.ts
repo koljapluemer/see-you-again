@@ -1,7 +1,9 @@
-import { App, TFile, Notice } from 'obsidian';
+import type { App, TFile} from 'obsidian';
+import { Notice } from 'obsidian';
+
 import { NoteService } from '../noteService';
 import { ContextFieldManager } from '../components/modalComponents';
-import { SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
+import type { SeeYouAgainFrontmatter, SeeYouAgainPlugin } from '../types';
 import { BaseNoteModal } from '../utils/baseModal';
 import { ContextUtils } from '../utils/contextUtils';
 
@@ -139,7 +141,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 	}
 
 	private async handleBatchSave(): Promise<void> {
-		if (!this.contextFieldManager) return;
+		if (!this.contextFieldManager) {return;}
 
 		const entries = this.contextFieldManager.getEntries();
 		if (entries.length === 0) {
@@ -148,7 +150,7 @@ export class BatchAddContextModal extends BaseNoteModal {
 		}
 
 		const applyButton = this.contentEl.querySelector('#batch-apply-button') as HTMLButtonElement;
-		if (!applyButton) return;
+		if (!applyButton) {return;}
 
 		try {
 			// Disable button and show initial progress

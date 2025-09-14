@@ -1,5 +1,6 @@
-import { Plugin } from 'obsidian';
-import { StateManager } from './state/stateManager';
+import type { Plugin } from 'obsidian';
+
+import type { StateManager } from './state/stateManager';
 
 export interface SeeYouAgainSettings {
 	lastProcessedNote: string;

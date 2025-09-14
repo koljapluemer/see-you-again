@@ -1,7 +1,7 @@
 import { BaseActionHandler } from './baseActionHandler';
 
 export class EvaluateActionHandler extends BaseActionHandler {
-	private evaluationText: string = '';
+	private evaluationText = '';
 	private textArea: HTMLTextAreaElement | null = null;
 
 	getPromptText(): string {

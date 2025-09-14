@@ -1,4 +1,5 @@
-import { AbstractInputSuggest, App } from 'obsidian';
+import type { App } from 'obsidian';
+import { AbstractInputSuggest } from 'obsidian';
 
 export class ContextInputSuggest extends AbstractInputSuggest<string> {
 	private pastContexts: string[] = [];

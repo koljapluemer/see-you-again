@@ -1,6 +1,8 @@
-import { TFile } from 'obsidian';
-import { createEmptyCard, fsrs, Card, ReviewLog, FSRS, Grade, IPreview } from 'ts-fsrs';
-import { NoteService } from '../noteService';
+import type { TFile } from 'obsidian';
+import type { Card, ReviewLog, FSRS, Grade, IPreview } from 'ts-fsrs';
+import { createEmptyCard, fsrs } from 'ts-fsrs';
+
+import type { NoteService } from '../noteService';
 
 export class FSRSService {
 	private noteService: NoteService;
