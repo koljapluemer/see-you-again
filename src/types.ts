@@ -5,7 +5,6 @@ import type { StateManager } from './state/stateManager';
 export interface SeeYouAgainSettings {
 	lastProcessedNote: string;
 	currentModalNote: string;
-	archiveFolder: string;
 }
 
 export interface SeeYouAgainPlugin extends Plugin {
@@ -16,8 +15,7 @@ export interface SeeYouAgainPlugin extends Plugin {
 
 export const DEFAULT_SETTINGS: SeeYouAgainSettings = {
 	lastProcessedNote: '',
-	currentModalNote: '',
-	archiveFolder: 'Archive'
+	currentModalNote: ''
 };
 
 export type ActionType = 'look-at' | 'memorize' | 'iterate' | 'schedule' | 'evaluate';

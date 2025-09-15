@@ -123,7 +123,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 				onChangeContext: () => this.changeContext(),
 				onJumpToNote: () => this.jumpToNote(),
 				onRemoveContext: () => this.removeContext(),
-				onRemoveContextAndArchive: () => this.removeContextAndArchive(),
 				onDeleteNote: () => this.deleteNote(),
 				createButton: (container: HTMLElement, text: string, onClick: () => void | Promise<void>) => {
 					const button = new ButtonComponent(container);
@@ -263,17 +262,6 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 		}
 	}
 
-	private async removeContextAndArchive(): Promise<void> {
-		if (!this.currentNote) { return; }
-
-		try {
-			await this.noteService.removeContext(this.currentNote, this.sanitizedContext);
-			await this.noteService.archiveNote(this.currentNote, this.plugin.settings.archiveFolder);
-			await this.handleNext(); // Load next note after archiving
-		} catch (error) {
-			this.showError('Error archiving note. Please try again.');
-		}
-	}
 
 	private async deleteNote(): Promise<void> {
 		if (!this.currentNote) { return; }

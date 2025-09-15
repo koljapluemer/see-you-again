@@ -52,6 +52,7 @@ You can input anything you want, here are some contexts that I use:
 - `first thing in the morning`
 - `when asked for movie recommendations`
 - `when stuck on a problem`
+- `when I want to study Chinese`
 
 ---
 
@@ -131,3 +132,16 @@ The memorization mode tries to smartly optimize the process of learning the cont
 - If it detects "---" in your note, it interprets what comes before as the front of a flashcard and the rest of a back that you have to remember
 - If your note title starts with ">", it assumes the goal is to memorize the title verbatim (useful for quotes)
 - Otherwise, it uses the title as the "front" of the flashcard and the body as the back
+
+### Finding Notes That Have No Context Yet
+
+*If you want to find out for which notes you haven't thought about their usage context yet, this function is your friend*
+
+Simply use Obsidian's search: `-"see-you-again" path:md`
+
+
+### Finding Notes That Explicitly Have No Context Set
+
+*Such notes will not show up in any context, and never show up in `Add context to a random note`. If you are using this plugin to fight Collector's fallacy, this function may help you to find notes that really have no point and maybe should be deleted.*
+
+Simply use Obsidian's search: `"see-you-again: {}"`

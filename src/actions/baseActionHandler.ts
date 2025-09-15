@@ -12,7 +12,6 @@ export interface ActionHandlerContext {
 	onChangeContext: () => void;
 	onJumpToNote: () => Promise<void>;
 	onRemoveContext: () => Promise<void>;
-	onRemoveContextAndArchive: () => Promise<void>;
 	onDeleteNote: () => Promise<void>;
 	createButton: (container: HTMLElement, text: string, onClick: () => void | Promise<void>) => HTMLElement;
 	showError: (message: string) => void;
@@ -66,7 +65,6 @@ export abstract class BaseActionHandler implements ActionHandler {
 	protected createStandardButtons(buttonContainer: HTMLElement): void {
 		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
 		this.context.createButton(buttonContainer, 'Remove Context', this.context.onRemoveContext);
-		this.context.createButton(buttonContainer, 'Remove Context and Archive', this.context.onRemoveContextAndArchive);
 		this.context.createButton(buttonContainer, 'Next', this.context.onNext);
 	}
 

@@ -360,32 +360,6 @@ export class NoteService {
 		});
 	}
 
-	/**
-	 * Move a note to the archive folder
-	 */
-	async archiveNote(file: TFile, archiveFolderPath: string): Promise<void> {
-		// Ensure archive folder exists
-		const archiveFolder = this.app.vault.getAbstractFileByPath(archiveFolderPath);
-		if (!archiveFolder) {
-			await this.app.vault.createFolder(archiveFolderPath);
-		}
-
-		// Generate new path in archive folder
-		const newPath = `${archiveFolderPath}/${file.name}`;
-
-		// Handle name conflicts by appending a number
-		let finalPath = newPath;
-		let counter = 1;
-		while (this.app.vault.getAbstractFileByPath(finalPath)) {
-			const baseName = file.basename;
-			const extension = file.extension;
-			finalPath = `${archiveFolderPath}/${baseName} ${counter}.${extension}`;
-			counter++;
-		}
-
-		// Move the file
-		await this.app.fileManager.renameFile(file, finalPath);
-	}
 
 	/**
 	 * Set a specific property in note frontmatter
