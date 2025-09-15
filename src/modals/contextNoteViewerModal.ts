@@ -175,11 +175,26 @@ export class ContextNoteViewerModal extends BaseNoteModal {
 			// Continue rendering even if marking as seen fails
 		}
 
-		// Action-specific prompt
+		// Change Context button at the top
+		const buttonRow = contentEl.createEl('div');
+		buttonRow.className = 'context-note-viewer-button-row';
+
+		const changeContextButton = new ButtonComponent(buttonRow);
+		changeContextButton.setButtonText('Change Context');
+		changeContextButton.onClick(() => this.changeContext());
+		changeContextButton.buttonEl.className = 'change-context-button';
+
+		// Horizontal rule before prompt
+		contentEl.createEl('hr');
+
+		// Action-specific prompt as heading
 		const promptText = this.currentActionHandler.getPromptText();
-		const promptLabel = contentEl.createEl('div');
-		promptLabel.textContent = promptText;
-		promptLabel.className = 'action-prompt';
+		const promptHeading = contentEl.createEl('h2');
+		promptHeading.textContent = promptText;
+		promptHeading.className = 'action-prompt-heading';
+
+		// Horizontal rule after prompt
+		contentEl.createEl('hr');
 
 		// Note title (only for non-memorize actions, memorize handles its own heading)
 		if (this.currentActionType !== 'memorize') {

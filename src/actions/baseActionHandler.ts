@@ -64,7 +64,6 @@ export abstract class BaseActionHandler implements ActionHandler {
 	}
 
 	protected createStandardButtons(buttonContainer: HTMLElement): void {
-		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
 		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
 		this.context.createButton(buttonContainer, 'Remove Context', this.context.onRemoveContext);
 		this.context.createButton(buttonContainer, 'Remove Context and Archive', this.context.onRemoveContextAndArchive);

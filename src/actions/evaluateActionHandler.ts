@@ -30,7 +30,6 @@ export class EvaluateActionHandler extends BaseActionHandler {
 	}
 
 	createButtons(buttonContainer: HTMLElement): void {
-		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
 		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
 		this.context.createButton(buttonContainer, 'Save and Next', async () => {
 			await this.handleDone();

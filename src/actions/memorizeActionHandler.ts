@@ -248,7 +248,6 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 	createButtons(buttonContainer: HTMLElement): void {
 		// For memorize action, NO Done button - only the standard navigation buttons
-		this.context.createButton(buttonContainer, 'Change Context', this.context.onChangeContext);
 		this.context.createButton(buttonContainer, 'Jump to Note', this.context.onJumpToNote);
 		this.context.createButton(buttonContainer, 'Next', this.context.onNext);
 	}
