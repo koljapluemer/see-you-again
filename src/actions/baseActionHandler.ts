@@ -1,4 +1,5 @@
 import type { App, TFile } from 'obsidian';
+import type { MarkdownRenderChild } from 'obsidian';
 
 import type { SeeYouAgainPlugin } from '../types';
 
@@ -27,6 +28,7 @@ export interface ActionHandler {
 
 export abstract class BaseActionHandler implements ActionHandler {
 	protected context: ActionHandlerContext;
+	protected renderChildren: MarkdownRenderChild[] = [];
 
 	constructor(context: ActionHandlerContext) {
 		this.context = context;
@@ -39,7 +41,7 @@ export abstract class BaseActionHandler implements ActionHandler {
 		try {
 			const noteContent = await this.context.app.vault.read(this.context.currentNote);
 			if (!noteContent || noteContent.trim().length === 0) {
-				container.createEl('div', { 
+				container.createEl('div', {
 					text: 'This note is empty',
 					cls: 'note-preview-empty'
 				});
@@ -47,10 +49,11 @@ export abstract class BaseActionHandler implements ActionHandler {
 				container.style.color = 'var(--text-muted)';
 			} else {
 				const { NoteRenderer } = await import('../utils/noteRenderer');
-				NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+				const renderChild = NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+				this.renderChildren.push(renderChild);
 			}
 		} catch (error) {
-			container.createEl('div', { 
+			container.createEl('div', {
 				text: 'Could not load note preview',
 				cls: 'note-preview-error'
 			});
@@ -69,6 +72,14 @@ export abstract class BaseActionHandler implements ActionHandler {
 	}
 
 	cleanup(): void {
-		// Override in subclasses if cleanup is needed
+		// Clean up all MarkdownRenderChild instances
+		this.renderChildren.forEach(renderChild => {
+			try {
+				renderChild.unload();
+			} catch (error) {
+				console.error('Error unloading render child:', error);
+			}
+		});
+		this.renderChildren = [];
 	}
 }

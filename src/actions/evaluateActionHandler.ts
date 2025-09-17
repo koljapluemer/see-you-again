@@ -67,6 +67,7 @@ export class EvaluateActionHandler extends BaseActionHandler {
 	}
 
 	cleanup(): void {
+		super.cleanup(); // Clean up render children
 		this.evaluationText = '';
 	}
 }

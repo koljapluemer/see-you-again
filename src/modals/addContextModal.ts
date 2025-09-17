@@ -1,5 +1,6 @@
 import type { App} from 'obsidian';
 import { TFile, Notice } from 'obsidian';
+import type { MarkdownRenderChild } from 'obsidian';
 
 import { NoteService } from '../noteService';
 import { ContextFieldManager } from '../components/modalComponents';
@@ -12,6 +13,7 @@ export class AddContextModal extends BaseNoteModal {
 	private noteService: NoteService;
 	private contextFieldManager: ContextFieldManager | null = null;
 	private saveAndNextButton: HTMLButtonElement | null = null;
+	private renderChildren: MarkdownRenderChild[] = [];
 
 	constructor(app: App, plugin: SeeYouAgainPlugin) {
 		super(app, plugin);
@@ -23,11 +25,21 @@ export class AddContextModal extends BaseNoteModal {
 	}
 
 	onClose(): void {
+		// Clean up render children
+		this.renderChildren.forEach(renderChild => {
+			try {
+				renderChild.unload();
+			} catch (error) {
+				console.error('Error unloading render child:', error);
+			}
+		});
+		this.renderChildren = [];
+
 		// Clean up autocomplete instances
 		this.contextFieldManager?.destroy();
 		this.contextFieldManager = null;
 		this.saveAndNextButton = null;
-		
+
 		super.onClose();
 	}
 
@@ -90,6 +102,16 @@ export class AddContextModal extends BaseNoteModal {
 	private async renderModal(): Promise<void> {
 		if (!this.currentNote) {return;}
 
+		// Clean up existing render children before re-rendering
+		this.renderChildren.forEach(renderChild => {
+			try {
+				renderChild.unload();
+			} catch (error) {
+				console.error('Error unloading render child:', error);
+			}
+		});
+		this.renderChildren = [];
+
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -109,7 +131,8 @@ export class AddContextModal extends BaseNoteModal {
 				});
 			} else {
 				// Render the markdown content
-				NoteRenderer.renderNoteContent(previewContainer, noteContent, this.currentNote, this.app, this.plugin);
+				const renderChild = NoteRenderer.renderNoteContent(previewContainer, noteContent, this.currentNote, this.app, this.plugin);
+				this.renderChildren.push(renderChild);
 			}
 		} catch (error) {
 			previewContainer.createEl('div', { 

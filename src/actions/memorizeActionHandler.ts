@@ -75,7 +75,8 @@ export class MemorizeActionHandler extends BaseActionHandler {
 				// Standard mode: show title only, then reveal button
 				const { NoteRenderer } = await import('../utils/noteRenderer');
 				const titleOnly = `# ${this.context.currentNote.basename}`;
-				NoteRenderer.renderNoteContent(container, titleOnly, this.context.currentNote, this.context.app, this.context.plugin);
+				const renderChild = NoteRenderer.renderNoteContent(container, titleOnly, this.context.currentNote, this.context.app, this.context.plugin);
+				this.renderChildren.push(renderChild);
 
 				const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
 					void this.revealNoteBody(container);
@@ -98,11 +99,13 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 		// Show filename as title
 		const filenameTitle = `# ${this.context.currentNote.basename}`;
-		NoteRenderer.renderNoteContent(container, filenameTitle, this.context.currentNote, this.context.app, this.context.plugin);
+		const titleRenderChild = NoteRenderer.renderNoteContent(container, filenameTitle, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(titleRenderChild);
 
 		// Show content before separator if it exists
 		if (this.contentBeforeSeparator) {
-			NoteRenderer.renderNoteContent(container, this.contentBeforeSeparator, this.context.currentNote, this.context.app, this.context.plugin);
+			const contentRenderChild = NoteRenderer.renderNoteContent(container, this.contentBeforeSeparator, this.context.currentNote, this.context.app, this.context.plugin);
+			this.renderChildren.push(contentRenderChild);
 		}
 
 		const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
@@ -118,11 +121,13 @@ export class MemorizeActionHandler extends BaseActionHandler {
 
 		// Show filename with blank
 		const titleWithBlank = `# ${this.context.currentNote.basename.replace(/^>/, '').replace(/\b\w{3,}\b/, '＿')}`;
-		NoteRenderer.renderNoteContent(container, titleWithBlank, this.context.currentNote, this.context.app, this.context.plugin);
+		const titleRenderChild = NoteRenderer.renderNoteContent(container, titleWithBlank, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(titleRenderChild);
 
 		// Show note content
 		const noteContent = await this.context.app.vault.read(this.context.currentNote);
-		NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+		const contentRenderChild = NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(contentRenderChild);
 
 		const revealButtonEl = this.context.createButton(container, 'Reveal', () => {
 			void this.revealFillInBlank(container);
@@ -142,16 +147,28 @@ export class MemorizeActionHandler extends BaseActionHandler {
 			revealButton.remove();
 		}
 
+		// Clean up old render children before re-rendering
+		this.renderChildren.forEach(renderChild => {
+			try {
+				renderChild.unload();
+			} catch (error) {
+				console.error('Error unloading render child:', error);
+			}
+		});
+		this.renderChildren = [];
+
 		// Re-render with filename as title + complete content
 		container.empty();
 		const { NoteRenderer } = await import('../utils/noteRenderer');
 
 		// Show filename as title
 		const filenameTitle = `# ${this.context.currentNote.basename}`;
-		NoteRenderer.renderNoteContent(container, filenameTitle, this.context.currentNote, this.context.app, this.context.plugin);
+		const titleRenderChild = NoteRenderer.renderNoteContent(container, filenameTitle, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(titleRenderChild);
 
 		// Show full content
-		NoteRenderer.renderNoteContent(container, this.fullContent, this.context.currentNote, this.context.app, this.context.plugin);
+		const contentRenderChild = NoteRenderer.renderNoteContent(container, this.fullContent, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(contentRenderChild);
 
 		this.addSpacedRepetitionButtons(container);
 	}
@@ -166,17 +183,29 @@ export class MemorizeActionHandler extends BaseActionHandler {
 			revealButton.remove();
 		}
 
+		// Clean up old render children before re-rendering
+		this.renderChildren.forEach(renderChild => {
+			try {
+				renderChild.unload();
+			} catch (error) {
+				console.error('Error unloading render child:', error);
+			}
+		});
+		this.renderChildren = [];
+
 		// Re-render with complete title and content
 		container.empty();
 		const { NoteRenderer } = await import('../utils/noteRenderer');
 
 		// Show complete filename (remove > prefix)
 		const completeTitle = `# ${this.context.currentNote.basename.replace(/^>/, '')}`;
-		NoteRenderer.renderNoteContent(container, completeTitle, this.context.currentNote, this.context.app, this.context.plugin);
+		const titleRenderChild = NoteRenderer.renderNoteContent(container, completeTitle, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(titleRenderChild);
 
 		// Show full note content
 		const noteContent = await this.context.app.vault.read(this.context.currentNote);
-		NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+		const contentRenderChild = NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(contentRenderChild);
 
 		this.addSpacedRepetitionButtons(container);
 	}
@@ -194,7 +223,8 @@ export class MemorizeActionHandler extends BaseActionHandler {
 		// Show the full note content
 		const { NoteRenderer } = await import('../utils/noteRenderer');
 		const noteContent = await this.context.app.vault.read(this.context.currentNote);
-		NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+		const contentRenderChild = NoteRenderer.renderNoteContent(container, noteContent, this.context.currentNote, this.context.app, this.context.plugin);
+		this.renderChildren.push(contentRenderChild);
 
 		this.addSpacedRepetitionButtons(container);
 	}
@@ -253,6 +283,7 @@ export class MemorizeActionHandler extends BaseActionHandler {
 	}
 
 	cleanup(): void {
+		super.cleanup(); // Clean up render children
 		this.isBodyRevealed = false;
 		this.isFillInBlank = false;
 		this.hasPartialReveal = false;

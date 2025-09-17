@@ -4,6 +4,7 @@ import { MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
 export class NoteRenderer {
 	/**
 	 * Render note content with full markdown support
+	 * Returns the MarkdownRenderChild for proper cleanup
 	 */
 	static renderNoteContent(
 		container: HTMLElement,
@@ -11,7 +12,7 @@ export class NoteRenderer {
 		currentNote: TFile | null,
 		app: App,
 		plugin: Plugin
-	): void {
+	): MarkdownRenderChild {
 		// Remove frontmatter if present
 		const contentWithoutFrontmatter = this.removeFrontmatter(content);
 		const previewContent = contentWithoutFrontmatter.trim();
@@ -20,11 +21,12 @@ export class NoteRenderer {
 		const previewEl = container.createEl('div', { cls: 'note-preview-content' });
 
 		// Render markdown using Obsidian's renderer - this handles images, wikilinks, etc.
-		this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
+		return this.renderMarkdown(previewContent, previewEl, currentNote, app, plugin);
 	}
 
 	/**
 	 * Render markdown content using Obsidian's renderer with proper MarkdownRenderChild
+	 * Returns the MarkdownRenderChild for proper cleanup
 	 */
 	static renderMarkdown(
 		content: string,
@@ -32,10 +34,10 @@ export class NoteRenderer {
 		currentNote: TFile | null,
 		app: App,
 		_plugin: Plugin
-	): void {
+	): MarkdownRenderChild {
 		// Create a MarkdownRenderChild for proper rendering and component lifecycle
 		const renderChild = new MarkdownRenderChild(container);
-		
+
 		// Use the current MarkdownRenderer.render() API (not deprecated renderMarkdown)
 		MarkdownRenderer.render(
 			app,
@@ -44,6 +46,8 @@ export class NoteRenderer {
 			(currentNote?.path !== null && currentNote?.path !== undefined) ? currentNote.path : '',
 			renderChild
 		).catch(error => console.error('Failed to render markdown:', error));
+
+		return renderChild;
 	}
 
 
