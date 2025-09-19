@@ -1,5 +1,7 @@
 # Obsidian: See You Again
 
+https://github.com/user-attachments/assets/3faceeab-8a41-473a-8581-bcf6b00adfd8
+
 1. Add **usage contexts** to your notes
 2. See your notes again just when you need them
 
